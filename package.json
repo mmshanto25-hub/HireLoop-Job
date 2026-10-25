@@ -1,0 +1,35 @@
+{
+  "name": "hireloop",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "HireLoop: a job hunting and recruitment platform (MERN, TypeScript).",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=22.9.0"
+  },
+  "scripts": {
+    "dev": "npm run build -w @hireloop/shared && concurrently -n shared,api,web -c gray,blue,magenta \"npm run dev -w @hireloop/shared\" \"npm run dev -w @hireloop/api\" \"npm run dev -w @hireloop/web\"",
+    "build": "npm run build -w @hireloop/shared && npm run build -w @hireloop/api && npm run build -w @hireloop/web",
+    "typecheck": "npm run build -w @hireloop/shared && npm run typecheck -w @hireloop/api && npm run typecheck -w @hireloop/web",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "npm run build -w @hireloop/shared && npm run test -w @hireloop/api && npm run test -w @hireloop/web",
+    "start": "npm run start -w @hireloop/api"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "concurrently": "^9.0.0",
+    "eslint": "^9.0.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.0",
+    "globals": "^15.0.0",
+    "prettier": "^3.3.0",
+    "typescript": "^5.6.0",
+    "typescript-eslint": "^8.0.0"
+  }
+}

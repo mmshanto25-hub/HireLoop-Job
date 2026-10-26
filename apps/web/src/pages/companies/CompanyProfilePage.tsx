@@ -7,10 +7,16 @@ import { ErrorState } from "@/components/ui/ErrorState";
 import { JobCard } from "@/components/jobs/JobCard";
 import { useCompany } from "@/features/companies/hooks";
 import { useSearchJobs } from "@/features/jobs/hooks";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 export function CompanyProfilePage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: company, isPending, isError, error, refetch } = useCompany(slug);
+
+  useDocumentTitle(
+    company ? `${company.name} Careers & Overview` : "Company Profile",
+    company ? `${company.name} profile, open positions, industry details, and headquarters.` : undefined,
+  );
 
   // Search jobs for this company
   const { data: companyJobs, isPending: jobsPending } = useSearchJobs(
@@ -44,6 +50,25 @@ export function CompanyProfilePage() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
+      {/* Schema.org Organization Structured Data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: company.name,
+            url: company.website || `https://hireloop.dev/companies/${company.slug}`,
+            logo: company.logoUrl,
+            description: company.description,
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: company.location,
+            },
+          }),
+        }}
+      />
+
       {/* Top Breadcrumb */}
       <div className="border-b border-border bg-surface py-4">
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
@@ -143,4 +168,3 @@ export function CompanyProfilePage() {
     </div>
   );
 }
-

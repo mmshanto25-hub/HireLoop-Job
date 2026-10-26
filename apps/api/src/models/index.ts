@@ -24,3 +24,18 @@ export {
   type JobAttributes,
   type JobDocument,
 } from "./Job.js";
+export {
+  Application as ApplicationModel,
+  type ApplicationAttributes,
+  type ApplicationDocument,
+} from "./Application.js";
+export {
+  SavedJob as SavedJobModel,
+  type SavedJobAttributes,
+  type SavedJobDocument,
+} from "./SavedJob.js";
+export {
+  Notification as NotificationModel,
+  type NotificationAttributes,
+  type NotificationDocument,
+} from "./Notification.js";

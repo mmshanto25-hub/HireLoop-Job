@@ -1,16 +1,39 @@
-import { Link } from "react-router-dom";
-import { Briefcase, Building2, Calendar, DollarSign, Globe2, MapPin } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Bookmark,
+  Briefcase,
+  Building2,
+  Calendar,
+  DollarSign,
+  Globe2,
+  MapPin,
+} from "lucide-react";
 import type { JobListItem } from "@hireloop/shared";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
+import { useSavedJobIds, useToggleSaveJob } from "@/features/saved-jobs/hooks";
+import { useCurrentUser } from "@/features/auth/hooks";
+import { cn } from "@/lib/cn";
 
 export interface JobCardProps {
   job: JobListItem;
 }
 
-function formatSalary(min: number | null, max: number | null, currency = "USD", period = "yearly"): string | null {
+function formatSalary(
+  min: number | null,
+  max: number | null,
+  currency = "USD",
+  period = "yearly",
+): string | null {
   if (min == null && max == null) return null;
-  const currSymbol = currency === "USD" ? "$" : currency === "EUR" ? "€" : currency === "GBP" ? "£" : `${currency} `;
+  const currSymbol =
+    currency === "USD"
+      ? "$"
+      : currency === "EUR"
+      ? "€"
+      : currency === "GBP"
+      ? "£"
+      : `${currency} `;
   const periodLabel = period === "yearly" ? "/yr" : period === "monthly" ? "/mo" : "/hr";
 
   if (min != null && max != null) {
@@ -37,8 +60,32 @@ function formatRelativeDate(dateStr: string | null): string {
 }
 
 export function JobCard({ job }: JobCardProps) {
+  const navigate = useNavigate();
+  const { data: user } = useCurrentUser();
+  const isSeeker = user?.roles.includes("seeker");
+  const { data: savedIds = [] } = useSavedJobIds(Boolean(isSeeker));
+  const toggleSave = useToggleSaveJob();
+
+  const isSaved = savedIds.includes(job.id);
   const salaryText = formatSalary(job.salaryMin, job.salaryMax, job.currency, job.salaryPeriod);
-  const locationText = job.city && job.country ? `${job.city}, ${job.country}` : job.city || job.country || (job.isRemote ? "Remote" : "Location flexible");
+  const locationText =
+    job.city && job.country
+      ? `${job.city}, ${job.country}`
+      : job.city || job.country || (job.isRemote ? "Remote" : "Location flexible");
+
+  const handleSaveToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!user) {
+      navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`);
+      return;
+    }
+
+    if (!isSeeker) return;
+
+    toggleSave.mutate({ jobId: job.id, isSaved });
+  };
 
   return (
     <article className="group relative flex flex-col justify-between rounded-xl border border-border bg-surface p-5 shadow-card transition-all hover:border-brand/40 hover:shadow-raised">
@@ -70,11 +117,32 @@ export function JobCard({ job }: JobCardProps) {
             </div>
           </div>
 
-          {job.isFeatured && (
-            <Badge tone="accent" size="sm">
-              Featured
-            </Badge>
-          )}
+          <div className="flex items-center gap-2">
+            {job.isFeatured && (
+              <Badge tone="accent" size="sm">
+                Featured
+              </Badge>
+            )}
+
+            {/* Bookmark action */}
+            {(!user || isSeeker) && (
+              <button
+                type="button"
+                onClick={handleSaveToggle}
+                disabled={toggleSave.isPending}
+                className={cn(
+                  "rounded-md p-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-brand",
+                  isSaved
+                    ? "bg-brand-soft text-brand"
+                    : "text-muted-foreground hover:bg-surface-muted hover:text-foreground",
+                )}
+                aria-label={isSaved ? "Remove from saved jobs" : "Save this job"}
+                title={isSaved ? "Saved" : "Save job"}
+              >
+                <Bookmark className={cn("h-4 w-4", isSaved && "fill-current")} />
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-y-2 gap-x-4 text-xs text-muted-foreground">
@@ -122,4 +190,3 @@ export function JobCard({ job }: JobCardProps) {
     </article>
   );
 }
-

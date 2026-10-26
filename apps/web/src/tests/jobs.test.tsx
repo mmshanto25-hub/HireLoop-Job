@@ -1,9 +1,21 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { JobListItem, CompanyListItem } from "@hireloop/shared";
 import { JobCard } from "@/components/jobs/JobCard";
 import { CompanyCard } from "@/components/companies/CompanyCard";
+
+function renderWithClient(ui: React.ReactElement) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>{ui}</MemoryRouter>
+    </QueryClientProvider>,
+  );
+}
 
 describe("JobCard Component", () => {
   const mockJob: JobListItem = {
@@ -29,11 +41,7 @@ describe("JobCard Component", () => {
   };
 
   it("renders job title, company name, salary range, and featured badge", () => {
-    render(
-      <MemoryRouter>
-        <JobCard job={mockJob} />
-      </MemoryRouter>,
-    );
+    renderWithClient(<JobCard job={mockJob} />);
 
     expect(screen.getByText("Senior Full-Stack Engineer")).toBeInTheDocument();
     expect(screen.getByText("HireLoop Tech")).toBeInTheDocument();
@@ -58,11 +66,7 @@ describe("CompanyCard Component", () => {
   };
 
   it("renders company name, industry, employee count, and open job count", () => {
-    render(
-      <MemoryRouter>
-        <CompanyCard company={mockCompany} />
-      </MemoryRouter>,
-    );
+    renderWithClient(<CompanyCard company={mockCompany} />);
 
     expect(screen.getByText("Stripe")).toBeInTheDocument();
     expect(screen.getByText("Fintech")).toBeInTheDocument();
@@ -71,4 +75,3 @@ describe("CompanyCard Component", () => {
     expect(screen.getByText("View company")).toBeInTheDocument();
   });
 });
-

@@ -10,6 +10,7 @@ import {
   Play,
   Plus,
   Trash2,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -79,103 +80,141 @@ export function ManageJobsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="font-heading text-2xl font-bold text-foreground sm:text-3xl">
-            Manage Jobs
+            Job Listings
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Create, edit, publish, and track all job postings for {company?.name || "your company"}.
+            Manage your open, draft, and closed positions.
           </p>
         </div>
 
-        {isCompanyApproved ? (
-          <Link to="/dashboard/recruiter/jobs/new">
-            <Button size="md" className="font-semibold shadow-sm">
-              <Plus className="h-4 w-4 mr-1.5" aria-hidden="true" />
-              Post New Job
-            </Button>
-          </Link>
-        ) : (
-          <div className="rounded-lg border border-warning/30 bg-warning-soft px-3 py-2 text-xs font-medium text-warning flex items-center gap-1.5">
-            <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
-            Company approval required to post jobs
-          </div>
-        )}
+        <Link to="/dashboard/recruiter/jobs/new">
+          <Button disabled={!isCompanyApproved} title={!isCompanyApproved ? "Company approval required" : undefined}>
+            <Plus className="h-4 w-4 mr-1.5" aria-hidden="true" />
+            Post New Job
+          </Button>
+        </Link>
       </div>
 
+      {/* Company Verification Banner */}
+      {!isCompanyApproved && (
+        <div className="mt-6 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" aria-hidden="true" />
+            <div className="text-sm">
+              <h3 className="font-semibold text-amber-800 dark:text-amber-300">
+                Company approval required to publish jobs
+              </h3>
+              <p className="mt-0.5 text-amber-700 dark:text-amber-400">
+                You can create drafts, but your company profile must be approved by an administrator before listings can be published publicly.
+              </p>
+              <div className="mt-2">
+                <Link
+                  to="/dashboard/recruiter/company"
+                  className="font-medium text-amber-800 dark:text-amber-200 underline hover:no-underline"
+                >
+                  View company status &rarr;
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Action error banner */}
       {actionError && (
-        <div className="mb-6 rounded-lg bg-danger-soft border border-danger/30 p-4 text-sm text-danger flex items-center justify-between">
-          <span>{actionError}</span>
-          <button type="button" onClick={() => setActionError(null)} className="text-xs font-semibold underline">
+        <div className="mt-4 rounded-xl border border-danger/20 bg-danger-soft p-4 text-sm text-danger flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span>{actionError}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setActionError(null)}
+            className="text-xs font-semibold underline"
+          >
             Dismiss
           </button>
         </div>
       )}
 
-      {/* Usage summary stats */}
-      <div className="mb-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="rounded-xl border border-border bg-surface p-5 shadow-card">
-          <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Active Listings</p>
-          <p className="mt-1 font-heading text-2xl font-bold text-foreground">{activeCount}</p>
+      {/* Plan quota info */}
+      <div className="mt-6 flex items-center justify-between rounded-xl border border-border bg-surface p-4 shadow-sm">
+        <div className="flex items-center gap-3">
+          <Briefcase className="h-5 w-5 text-brand" aria-hidden="true" />
+          <div className="text-sm">
+            <span className="font-semibold text-foreground">Active Listings: </span>
+            <span className="text-muted-foreground">{activeCount} / 3 on Free tier</span>
+          </div>
         </div>
-        <div className="rounded-xl border border-border bg-surface p-5 shadow-card">
-          <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Draft Jobs</p>
-          <p className="mt-1 font-heading text-2xl font-bold text-foreground">
-            {jobs?.filter((j) => j.status === "draft").length ?? 0}
-          </p>
-        </div>
-        <div className="rounded-xl border border-border bg-surface p-5 shadow-card">
-          <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Closed Positions</p>
-          <p className="mt-1 font-heading text-2xl font-bold text-foreground">
-            {jobs?.filter((j) => j.status === "closed").length ?? 0}
-          </p>
-        </div>
+
+        <Link
+          to="/pricing"
+          className="text-xs font-semibold text-brand hover:underline"
+        >
+          Upgrade for higher limits &rarr;
+        </Link>
       </div>
 
-      {/* Jobs list */}
-      <div className="rounded-2xl border border-border bg-surface shadow-card overflow-hidden">
+      {/* Jobs List */}
+      <div className="mt-6 rounded-2xl border border-border bg-surface shadow-card overflow-hidden">
         {isPending ? (
           <div className="p-6 space-y-4">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-16 w-full rounded-xl" />
+            ))}
           </div>
         ) : jobs && jobs.length > 0 ? (
           <div className="divide-y divide-border">
             {jobs.map((job) => (
-              <div key={job.id} className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-surface-muted/30 transition-colors">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-3">
-                    <h3 className="font-heading text-base font-semibold text-foreground truncate">
+              <div
+                key={job.id}
+                className="flex flex-col sm:flex-row sm:items-center justify-between p-5 gap-4 hover:bg-surface-muted/30 transition-colors"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-heading font-semibold text-base text-foreground">
                       {job.title}
-                    </h3>
+                    </span>
                     <Badge
                       tone={
                         job.status === "active"
                           ? "success"
-                          : job.status === "draft"
+                          : job.status === "closed"
                           ? "neutral"
-                          : "danger"
+                          : "accent"
                       }
                       size="sm"
-                      className="capitalize"
                     >
                       {job.status}
                     </Badge>
+                    {job.isFeatured && (
+                      <Badge tone="brand" size="sm">
+                        Featured
+                      </Badge>
+                    )}
                   </div>
 
-                  <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                     <span>{job.category}</span>
                     <span>•</span>
                     <span className="capitalize">{job.jobType}</span>
                     <span>•</span>
-                    <span>Created {new Date(job.createdAt).toLocaleDateString()}</span>
+                    <span>
+                      {job.city || job.country
+                        ? `${job.city || ""}, ${job.country || ""}`
+                        : "Remote"}
+                    </span>
                     {job.publishedAt && (
                       <>
                         <span>•</span>
-                        <span>Published {new Date(job.publishedAt).toLocaleDateString()}</span>
+                        <span>
+                          Published {new Date(job.publishedAt).toLocaleDateString()}
+                        </span>
                       </>
                     )}
                   </div>
@@ -183,6 +222,13 @@ export function ManageJobsPage() {
 
                 {/* Actions */}
                 <div className="flex items-center gap-2 shrink-0">
+                  <Link to={`/dashboard/recruiter/jobs/${job.id}/applicants`}>
+                    <Button size="sm" variant="outline">
+                      <Users className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
+                      Applicants
+                    </Button>
+                  </Link>
+
                   {job.status === "draft" && (
                     <Button
                       size="sm"
@@ -266,16 +312,16 @@ export function ManageJobsPage() {
         )}
       </div>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete Confirmation */}
       <ConfirmDialog
         open={Boolean(jobToDelete)}
         onOpenChange={(open) => !open && setJobToDelete(null)}
-        title="Delete Job Listing?"
+        title="Delete Job Listing"
         description="Are you sure you want to permanently delete this job listing? This action cannot be undone."
-        confirmLabel="Delete Listing"
+        confirmLabel="Delete Job"
         destructive
-        onConfirm={handleDeleteConfirm}
         loading={deleteMutation.isPending}
+        onConfirm={handleDeleteConfirm}
       />
     </div>
   );

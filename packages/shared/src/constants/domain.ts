@@ -31,8 +31,24 @@ export const APPLICATION_STATUSES = [
   "shortlisted",
   "rejected",
   "offered",
+  "withdrawn",
 ] as const;
 export type ApplicationStatus = (typeof APPLICATION_STATUSES)[number];
+
+export const NOTIFICATION_TYPES = [
+  "application_submitted",
+  "application_status_changed",
+  "interview_scheduled",
+  "company_approved",
+  "company_rejected",
+  "system",
+] as const;
+export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+
+/** Default limits for free tier accounts (enforced before Phase 5 billing activates) */
+export const FREE_SEEKER_MONTHLY_APPLICATION_LIMIT = 3;
+export const FREE_SEEKER_SAVED_JOB_LIMIT = 10;
+export const FREE_RECRUITER_ACTIVE_JOB_LIMIT = 3;
 
 export const SUBSCRIPTION_STATUSES = [
   "incomplete",

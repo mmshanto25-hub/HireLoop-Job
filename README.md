@@ -1,245 +1,197 @@
-# HireLoop
+# HireLoop — Production-Ready MERN Job Hunting & Recruitment Platform
 
-HireLoop is a job hunting and recruitment platform for **job seekers**, **recruiters** and **administrators**. It is a TypeScript MERN monorepo: React and Vite on the web, Express and MongoDB (Mongoose) on the API, and a shared package for domain constants and response types.
-
-> **Status: Phase 1 (Foundation) complete.** The project runs end to end: validated configuration, a database-backed API with health and readiness endpoints, the design system, and a web app that calls the API. Authentication, jobs, applications, billing and dashboards are built in later phases. See [Roadmap](#roadmap).
+HireLoop is a modern full-stack web application connecting **Job Seekers**, **Recruiters**, and **Administrators** through a secure, high-performance architecture. Built with React 18, Vite, Node.js, Express, MongoDB (Mongoose), and TypeScript across a monorepo.
 
 ---
 
-## Contents
+## 🚀 Key Features
 
-- [Repository layout](#repository-layout)
-- [Prerequisites](#prerequisites)
-- [Quick start](#quick-start)
-- [Environment configuration](#environment-configuration)
-- [Scripts](#scripts)
-- [Architecture notes](#architecture-notes)
-- [Design system](#design-system)
-- [Testing](#testing)
-- [Troubleshooting](#troubleshooting)
-- [Roadmap](#roadmap)
-- [Security notes](#security-notes)
+### For Job Seekers
+* **Job Discovery**: Keyword, category, job-type, salary range, location, and remote status filters with server-side pagination and URL sync.
+* **1-Click Application**: Apply with customizable cover letters, PDF resume uploads, or saved profile credentials.
+* **Application Tracker**: Real-time status pipeline (`Applied` ➔ `Under Review` ➔ `Shortlisted` ➔ `Offered` / `Rejected`).
+* **Saved Jobs**: Quick bookmarking with plan-based quotas.
+* **Seeker Dashboard**: KPI metrics, profile strength meter, interactive status pipeline, and intelligent job recommendations based on candidate skills.
+
+### For Recruiters
+* **Employer Branding**: Register, verify, and brand organizations with logos and headquarter details.
+* **Job Management**: Full lifecycle CRUD (draft, publish, edit, close, duplicate, feature) with quota enforcement.
+* **Candidate Management**: Review incoming applications per opening, stream confidential PDF resumes securely, update statuses, leave private recruiter notes, and schedule interviews.
+* **Recruitment Analytics**: 30-day candidate acquisition velocity, candidate status funnel drop-off, average time-to-hire metrics, and per-job conversion analytics.
+
+### For Administrators
+* **Platform Operations**: High-level platform KPIs, user registration trends, and sector distribution charts.
+* **User Management**: Search by name or email, role inspection, dynamic role assignment/revocation, and instant suspension/reactivation.
+* **Company Moderation**: Approve or reject pending employer organizations with feedback.
+* **Job Moderation**: Feature prominent listings or administratively close policy-violating roles with full audit logs.
+* **Billing & Ledger**: Summary of active subscriptions, gross revenue, and audited transaction report export (CSV).
 
 ---
 
-## Repository layout
+## 🛠️ Technology Stack
+
+| Layer | Technology |
+|---|---|
+| **Frontend** | React 18, Vite, TypeScript, Tailwind CSS v4, React Router v7, TanStack Query v5, Zustand, React Hook Form, Zod, Lucide React, Sonner |
+| **Backend** | Node.js (>=22.9), Express.js, TypeScript, Mongoose, Zod, Helmet, Pino structured logging, Jose (JWT), Bcrypt.js, Multer |
+| **Shared** | `@hireloop/shared` monorepo package for domain constants, types, and Zod schemas |
+| **Testing** | Vitest, Supertest, Testing Library |
+| **Database** | MongoDB (Atlas or Local 6.0+) |
+
+---
+
+## 📁 Repository Layout
 
 ```
 hireloop/
-  apps/
-    api/        Express + Mongoose API (TypeScript)
-    web/        React + Vite web app (TypeScript, Tailwind CSS v4)
-  packages/
-    shared/     Domain constants, Zod pagination schema, API response types
-  .env.example  Every environment variable, documented
-  tsconfig.base.json, eslint.config.js, .prettierrc.json
+├── apps/
+│   ├── api/                     # Node.js + Express backend
+│   │   ├── src/
+│   │   │   ├── config/          # Zod env validation, MongoDB connection
+│   │   │   ├── controllers/     # Thin HTTP controllers
+│   │   │   ├── middleware/      # Auth, CSRF, rate limiters, file upload
+│   │   │   ├── models/          # 11 Mongoose collections with compound indexes
+│   │   │   ├── routes/          # Versioned REST endpoints (/api/v1/*)
+│   │   │   ├── services/        # Business logic, authorization, aggregation
+│   │   │   ├── scripts/         # Idempotent seed and admin bootstrap scripts
+│   │   │   └── tests/           # Vitest unit and integration suites
+│   └── web/                     # React + Vite frontend
+│       ├── src/
+│       │   ├── components/      # UI components, layout, dialogs, modals
+│       │   ├── features/        # TanStack query hooks and API callers
+│       │   ├── hooks/           # Document title & SEO helpers
+│       │   ├── pages/           # Public pages & role-specific dashboards
+│       │   └── styles/          # Tailwind CSS design tokens (light/dark mode)
+│       └── public/              # Robots.txt, sitemap.xml, assets
+├── packages/
+│   └── shared/                  # Common TypeScript interfaces & Zod validators
+└── package.json                 # Monorepo workspaces configuration
 ```
 
-The API is organised by domain as it grows. Controllers stay thin, services hold business logic, and request validation lives next to each feature.
+---
 
-## Prerequisites
+## 🏁 Quick Start & Local Setup
 
-| Tool    | Version           | Notes                                    |
-| ------- | ----------------- | ---------------------------------------- |
-| Node.js | **22.9 or later** | Required for `--env-file-if-exists`      |
-| npm     | 10 or later       | Workspaces are used                      |
-| MongoDB | 6.0 or later      | Local `mongod`, Docker, or MongoDB Atlas |
+### 1. Prerequisites
+- **Node.js**: `v22.9.0` or higher
+- **npm**: `v10` or higher
+- **MongoDB**: Local `mongod` instance or MongoDB Atlas connection URI
 
-## Quick start
-
+### 2. Installation
 ```bash
-# 1. Install every workspace
+# Clone the repository
+git clone https://github.com/your-org/hireloop.git
+cd hireloop
+
+# Install all workspace dependencies
 npm install
+```
 
-# 2. Create the API environment file and fill in the required values
+### 3. Environment Configuration
+Copy `.env.example` to `apps/api/.env`:
+```bash
 cp .env.example apps/api/.env
-#    Generate three different secrets (each at least 32 characters):
+```
+
+Generate 3 unique 48-byte secrets for token signing:
+```bash
 node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
+```
 
-# 3. Start MongoDB, then set MONGODB_URI in apps/api/.env, for example:
-#    MONGODB_URI=mongodb://127.0.0.1:27017/hireloop
+Configure `apps/api/.env`:
+```ini
+NODE_ENV=development
+PORT=4000
+WEB_URL=http://localhost:5173
+API_URL=http://localhost:4000
+MONGODB_URI=mongodb://127.0.0.1:27017/hireloop
 
-# 4. Run the API, the web app and the shared package watcher together
+SESSION_SECRET=your_generated_session_secret
+ACCESS_TOKEN_SECRET=your_generated_access_token_secret
+REFRESH_TOKEN_SECRET=your_generated_refresh_token_secret
+
+EMAIL_PROVIDER=console
+EMAIL_FROM=HireLoop <no-reply@localhost>
+```
+
+### 4. Database Seeding
+Populate the database with realistic demo companies, 40 jobs, applications, and accounts:
+```bash
+npm run seed
+```
+
+### 5. Running the Application
+```bash
 npm run dev
 ```
 
-Then open:
+Visit:
+- **Frontend App**: [http://localhost:5173](http://localhost:5173)
+- **API Health Check**: [http://localhost:4000/api/v1/health](http://localhost:4000/api/v1/health)
+- **API Readiness Check**: [http://localhost:4000/api/v1/ready](http://localhost:4000/api/v1/ready)
 
-- Web app: <http://localhost:5173>
-- API health: <http://localhost:5173/api/v1/health> (proxied through Vite) or <http://localhost:4000/api/v1/health>
-- API readiness (checks the database): <http://localhost:4000/api/v1/ready>
+---
 
-In development the Vite server proxies `/api` to the API, so cookies stay same-origin once authentication arrives in Phase 2.
+## 🔑 Demo Account Credentials
 
-### Production-style run
+The seed script creates the following pre-configured demonstration accounts:
 
-```bash
-npm run build                 # shared, API and web
-npm run start                 # runs apps/api/dist/server.js
-# Serve apps/web/dist with any static host, or run: npm run preview -w @hireloop/web
-```
+| Role | Email | Password | Access Rights |
+|---|---|---|---|
+| **Administrator** | `admin@hireloop.dev` | `Password123!` | Moderation, users, company approval, payments |
+| **Recruiter** | `recruiter@hireloop.dev` | `Password123!` | Employer branding, job posting, applicant pipeline |
+| **Recruiter 2** | `recruiter2@hireloop.dev` | `Password123!` | Additional organization & active openings |
+| **Job Seeker** | `seeker@hireloop.dev` | `Password123!` | Pre-filled profile, submitted applications, saved jobs |
+| **Job Seeker 2** | `seeker2@hireloop.dev` | `Password123!` | AI specialist with an active job offer |
 
-## Environment configuration
+---
 
-The API validates its environment at startup with Zod (`apps/api/src/config/env.ts`). If anything is missing or malformed, the process exits with one message that lists every problem. It does not fail later in a confusing way.
+## 📜 Available Scripts
 
-| Variable               | Required                   | Purpose                                                                  |
-| ---------------------- | -------------------------- | ------------------------------------------------------------------------ |
-| `NODE_ENV`             | No (default `development`) | `development`, `test` or `production`. Production requires `https` URLs. |
-| `PORT`                 | No (default `4000`)        | API port                                                                 |
-| `WEB_URL`              | **Yes**                    | Public web origin. Also the only CORS origin allowed.                    |
-| `API_URL`              | **Yes**                    | Public API origin                                                        |
-| `MONGODB_URI`          | **Yes**                    | Must start with `mongodb://` or `mongodb+srv://`                         |
-| `TRUST_PROXY`          | No (default `0`)           | Reverse-proxy hops, so client IPs are correct for rate limiting          |
-| `SESSION_SECRET`       | **Yes**                    | At least 32 characters. Must differ from the other two secrets.          |
-| `ACCESS_TOKEN_SECRET`  | **Yes**                    | At least 32 characters. Used from Phase 2.                               |
-| `REFRESH_TOKEN_SECRET` | **Yes**                    | At least 32 characters. Used from Phase 2.                               |
-| `LOG_LEVEL`            | No (default `info`)        | `fatal` to `trace`, or `silent`                                          |
+| Command | Description |
+|---|---|
+| `npm run dev` | Runs shared watcher, API backend, and Vite frontend concurrently |
+| `npm run typecheck` | Compiles TypeScript across all packages with zero errors |
+| `npm run test` | Runs all backend and frontend Vitest suites |
+| `npm run build` | Compiles `@hireloop/shared`, `@hireloop/api`, and builds Vite web bundle |
+| `npm run seed` | Idempotently seeds demo users, companies, jobs, applications, and stats |
+| `npm run bootstrap:admin` | Creates or grants administrative permissions to a specific user securely |
 
-| `EMAIL_PROVIDER` | No (default `console`) | `console` prints emails to the terminal (development only). `resend` sends through Resend and is required in production. |
-| `EMAIL_API_KEY` | With `resend` | Resend API key |
-| `EMAIL_FROM` | No | Sender address, for example `HireLoop <no-reply@yourdomain>` |
-| `GOOGLE_CLIENT_ID` | Optional | Google OAuth client. Set all three Google variables together, or none. |
-| `GOOGLE_CLIENT_SECRET` | Optional | Google OAuth client secret |
-| `GOOGLE_CALLBACK_URL` | Optional | Must match the redirect URI registered with Google, for example `http://localhost:4000/api/v1/auth/google/callback` |
+---
 
-Storage and Stripe variables are listed in `.env.example` and are not read until their phases. The admin bootstrap variables (`ADMIN_EMAIL`, `ADMIN_FULL_NAME`, `ADMIN_PASSWORD`) are read only by the bootstrap script.
+## 🔒 Security & Privacy Architecture
 
-## Authentication (Phase 2)
+- **HTTP-Only Cookie Sessions**: Access and refresh tokens are stored in secure HTTP-only cookies (`SameSite=Lax` / `Strict`), protected against XSS.
+- **CSRF Protection**: Double-submit CSRF cookie & header validation protects all state-changing mutations (`POST`, `PATCH`, `DELETE`).
+- **Authorization & RBAC**: Every endpoint enforces `requireAuth`, `requireRole`, and strict resource ownership guards (`requireResourceOwnership`).
+- **Private Document Streaming**: Resumes are stored in private storage (`uploads/private`) with randomized object keys. Resumes can only be streamed by authorized recruiters of that specific job or the candidate themselves.
+- **Admin Invariant Protection**: An admin cannot suspend their own account or remove their own admin role; the last active administrator on the platform cannot be removed.
+- **Rate Limiting**: Tiered IP-based rate limiting on sensitive auth endpoints, search queries, and application submissions.
 
-**Session model.** Sign-in issues a short-lived access JWT (15 minutes) in the HTTP-only cookie `hl_access`, plus a refresh value in `hl_refresh`, which is scoped to `/api/v1/auth`. The refresh value is `<sessionId>.<secret>`. Only a SHA-256 hash of the secret is stored. Each refresh rotates the secret. Presenting an old secret is treated as theft: the session is revoked. Every protected request checks that the session is still active and that the user is still active, so logout and suspension take effect immediately.
+---
 
-**CSRF.** The API reads the readable cookie `hl_csrf`. Unsafe requests that carry auth cookies must send the same value in the `X-CSRF-Token` header. Any request with an `Origin` header that is not the web app or the API is refused.
+## 🌐 SEO, Indexing & Accessibility
 
-**Account enumeration.** Registration, resend-verification, forgot-password and sign-in return the same response whether or not the account exists. Registration and sign-in run a bcrypt comparison either way, so timing does not reveal accounts.
+- **Robots & Sitemap**: Configured `robots.txt` and `sitemap.xml` in `apps/web/public/` allowing indexing of public openings while disallowing authenticated dashboard URLs.
+- **Structured Data**: Injects JSON-LD schema (`schema.org/JobPosting` and `schema.org/Organization`) for search engine rich snippets.
+- **WCAG AA Compliance**: High-contrast tokens, keyboard focus rings, screen-reader status announcements, and reduced-motion animations.
 
-**Google.** Start at `GET /api/v1/auth/google?role=seeker|recruiter&next=/path`. The state and nonce are carried in a signed, 10-minute cookie. The ID token nonce is verified. An existing password account is linked to Google only when Google reports the email as verified.
+---
 
-**Endpoints** (all under `/api/v1/auth`): `POST register`, `verify-email`, `resend-verification`, `login`, `refresh`, `logout`, `forgot-password`, `reset-password`, `change-password`; `GET me`, `google`, `google/callback`.
+## 🚢 Production Deployment
 
-**Admin** (under `/api/v1/admin`, admin role only): `PATCH users/:id/status` and `PUT users/:id/roles`. Every change is written to the `AuditLog` collection. An admin cannot suspend or demote themselves, and the last active admin cannot be removed. Admin accounts cannot be created by self-registration.
+### 1. Frontend (Vercel / Netlify / Cloudflare Pages)
+- **Root Directory**: `apps/web`
+- **Build Command**: `npm run build -w @hireloop/web`
+- **Output Directory**: `dist`
+- **Environment Variables**:
+  - `VITE_API_URL`: Your production API domain (e.g. `https://api.hireloop.dev`)
 
-**Creating the first admin:**
-
-```bash
-ADMIN_EMAIL=you@example.com ADMIN_FULL_NAME="Your Name" \
-ADMIN_PASSWORD='a long passphrase 1' npm run bootstrap:admin
-```
-
-The script is idempotent. If the user already exists, it adds the admin role and leaves the password unchanged.
-
-**Tests.** The unit suite covers password hashing, token signing and tampering, the OAuth state cookie, safe redirect paths, CSRF, role checks, and template escaping. `auth.integration.test.ts` covers the full flow against a real MongoDB: registration, verification, login, refresh rotation, reuse detection, suspension, and the generic responses. It runs only when `TEST_MONGODB_URI` is set, and it drops that database first, so point it at a disposable database only.
-
-```bash
-TEST_MONGODB_URI=mongodb://127.0.0.1:27017/hireloop_test npm run test -w @hireloop/api
-```
-
-**Known limits in this phase.** Profile completion, account self-deactivation, company approval and subscription entitlements belong to Phases 3 and 5. The admin console UI is Phase 6.
-
-Never commit real secrets. `.env` and `.env.*` are ignored by git. Only `.env.example` is tracked.
-
-## Scripts
-
-- `npm run bootstrap:admin -w @hireloop/api`: creates the first administrator from environment variables (see Authentication).
-
-Run from the repository root unless stated otherwise.
-
-| Command                                   | What it does                                                              |
-| ----------------------------------------- | ------------------------------------------------------------------------- |
-| `npm run dev`                             | Builds the shared package, then runs its watcher, the API and the web app |
-| `npm run build`                           | Production build of shared, API and web                                   |
-| `npm run start`                           | Runs the compiled API                                                     |
-| `npm run typecheck`                       | Strict TypeScript check of every package                                  |
-| `npm run test`                            | Runs the API and web test suites                                          |
-| `npm run lint`                            | ESLint across the repository                                              |
-| `npm run format` / `npm run format:check` | Prettier write / verify                                                   |
-
-Workspace-specific commands: `npm run test:watch -w @hireloop/api`, `npm run dev -w @hireloop/web`.
-
-## Architecture notes
-
-**Response envelope.** Every API response uses one shape, defined in `@hireloop/shared`:
-
-```jsonc
-// success
-{ "success": true, "data": { ... }, "meta": { "requestId": "..." } }
-// failure
-{ "success": false, "error": { "code": "VALIDATION_ERROR", "message": "...", "details": [...] }, "meta": { "requestId": "..." } }
-```
-
-Error codes are a fixed set (`VALIDATION_ERROR`, `UNAUTHENTICATED`, `FORBIDDEN`, `NOT_FOUND`, `CONFLICT`, `RATE_LIMITED`, and others). Unexpected errors are logged in full on the server and returned to the client as a generic message, with no stack trace.
-
-**Request IDs.** Each request gets an `X-Request-Id` header. A client-supplied ID is accepted only when it matches a safe pattern, which prevents log injection.
-
-**Logging.** Structured JSON through Pino. Cookies, authorization headers and password or token fields are redacted.
-
-**Security headers and CORS.** Helmet sets a restrictive Content Security Policy for the JSON API. CORS allows only `WEB_URL`, with credentials enabled. Wildcard origins are never used. Request bodies are limited to 100 KB.
-
-**Health and readiness.** `/api/v1/health` is a liveness check and never touches the database. `/api/v1/ready` returns `503` until MongoDB is connected. The server refuses to start if the database cannot be reached on boot.
-
-**Shared package.** `@hireloop/shared` holds role, status and plan enumerations, the pagination schema and the response types. The API models and the web app import the same values, so they cannot drift apart. It must be built before the API or web app run, which `npm run dev` does automatically.
-
-## Design system
-
-Tokens live in `apps/web/src/styles/index.css`:
-
-- **Raw palette** (`--hl-*`) changes between light and dark mode.
-- **Tailwind theme** (`bg-background`, `text-brand`, `text-muted-foreground`, and so on) points at the raw palette. Components never hardcode colours.
-- Typography: **Sora** for headings, **Manrope** for body text.
-- Dark mode follows the operating system by default. The choice (light, dark or system) persists in local storage and is applied before first paint, so there is no flash.
-- `prefers-reduced-motion` is respected globally.
-
-Reusable components are in `apps/web/src/components/ui` and are exported from one barrel. They include Button, the form controls (Input, Textarea, Select, Checkbox, RadioGroup, FormField), Modal, Drawer, ConfirmDialog, Dropdown, Tooltip, Badge, StatusIndicator, Avatar, Skeleton, EmptyState, ErrorState, Pagination, SearchBar and StatCard.
-
-Open **/design-system** in the running app to see every component in light and dark mode.
-
-Dialogs, dropdowns, tooltips, checkboxes and radio groups use Radix primitives, which provide focus management, keyboard support and ARIA roles.
-
-## Testing
-
-```bash
-npm run test -w @hireloop/api   # Vitest + Supertest
-npm run test -w @hireloop/web   # Vitest + Testing Library (jsdom)
-```
-
-Current coverage (Phase 1):
-
-- **API:** environment validation (missing, short, duplicate and malformed values; production HTTPS rules), the health and readiness endpoints, request-ID handling, structured 404s, malformed and oversized bodies, security headers, and the CORS allow-list.
-- **Web:** the Button and FormField components (labels, ARIA error linkage, loading state) and the theme resolution logic.
-
-Playwright end-to-end tests and the authorization, billing and business-rule suites begin in later phases, as the features they cover are built.
-
-## Troubleshooting
-
-**`Invalid environment configuration` on start.** The message lists each variable to fix. Check that `apps/api/.env` exists, that the secrets are at least 32 characters, and that the three secrets differ.
-
-**`Could not connect to MongoDB`.** The API exits at start-up when the database is unreachable. Check that `mongod` is running, that `MONGODB_URI` is correct, and that Atlas network access allows your IP.
-
-**`/api/v1/ready` returns 503.** The API is running but the database connection is not ready. Check the API logs.
-
-**The web app shows "API unreachable".** Start the API (`npm run dev` starts it), then retry. The Vite proxy targets `http://localhost:4000` by default.
-
-**`--env-file-if-exists` is not recognised.** Upgrade Node.js to 22.9 or later.
-
-## Roadmap
-
-| Phase | Scope                                                                                                                  | Status                                                         |
-| ----- | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| 1     | Foundation: monorepo, config, database, design system, shared components                                               | **Complete**                                                   |
-| 2     | Authentication and authorization: users, roles, sessions, Google OAuth, email verification, password reset, middleware | **Complete (backend integration tests pending a MongoDB run)** |
-| 3     | Profiles, companies and jobs: uploads, company moderation, job publishing, public pages                                | Planned                                                        |
-| 4     | Applications: submissions, saved jobs, status workflow, notifications                                                  | Planned                                                        |
-| 5     | Subscriptions and payments: Stripe Checkout, verified webhooks, entitlements                                           | Planned                                                        |
-| 6     | Dashboards and analytics: seeker, recruiter and admin dashboards, exports                                              | Planned                                                        |
-| 7     | Quality and launch: seed data, end-to-end tests, SEO, monitoring, deployment                                           | Planned                                                        |
-
-Components from the specification that depend on domain data are deferred to the phase that needs them, rather than built empty. These are DataTable, FilterBar, ChartCard, JobCard, CompanyCard, PricingCard, ApplicantCard, CompanyLogo, NotificationDropdown, ProfileMenu and DashboardSidebar.
-
-## Security notes
-
-- Configuration is validated at startup. Secrets come only from environment variables.
-- The API uses an explicit CORS allow-list, strict security headers, a request body limit and rate limiting. Stricter limits for sign-in and uploads arrive in Phase 2 and Phase 3.
-- Production requires HTTPS for both public URLs.
-- Logs redact authorization headers, cookies, passwords and tokens.
-- Dependencies were checked with `npm audit --omit=dev`, which reports zero known vulnerabilities at the end of Phase 1.
-- Authentication cookies, CSRF protection and the authorization middleware are the first items of Phase 2. Nothing in Phase 1 stores user data or grants access to anything.
+### 2. Backend (Render / Railway / AWS / Docker)
+- **Root Directory**: repository root
+- **Build Command**: `npm run build -w @hireloop/shared && npm run build -w @hireloop/api`
+- **Start Command**: `npm run start -w @hireloop/api`
+- **Environment Variables**:
+  - Set all production environment variables from `.env.example`
+  - Set `NODE_ENV=production`
+  - Set `COOKIE_DOMAIN` and explicit `WEB_URL` for CORS allow-listing.

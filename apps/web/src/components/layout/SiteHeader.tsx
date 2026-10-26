@@ -6,6 +6,7 @@ import { useCurrentUser, useLogout } from "@/features/auth/hooks";
 import { Button, Drawer } from "@/components/ui";
 import { ThemeToggle } from "./ThemeToggle";
 import { BrandMark } from "./BrandMark";
+import { NotificationDropdown } from "./NotificationDropdown";
 
 const NAV_LINKS = [
   { to: "/jobs", label: "Find jobs" },
@@ -55,6 +56,7 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
+          {user && <NotificationDropdown />}
           <ThemeToggle />
           {isPending ? null : user ? (
             <>
@@ -152,22 +154,47 @@ export function SiteHeader() {
                   Go to Dashboard
                 </Link>
                 {user.roles.includes("seeker") && (
-                  <Link
-                    to="/dashboard/seeker/settings"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="rounded-md border border-border px-4 py-2 text-center text-sm font-medium text-foreground hover:bg-surface-muted"
-                  >
-                    Profile & Settings
-                  </Link>
+                  <>
+                    <Link
+                      to="/dashboard/seeker/applications"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="rounded-md border border-border px-4 py-2 text-center text-sm font-medium text-foreground hover:bg-surface-muted"
+                    >
+                      My Applications
+                    </Link>
+                    <Link
+                      to="/dashboard/seeker/saved"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="rounded-md border border-border px-4 py-2 text-center text-sm font-medium text-foreground hover:bg-surface-muted"
+                    >
+                      Saved Jobs
+                    </Link>
+                    <Link
+                      to="/dashboard/seeker/settings"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="rounded-md border border-border px-4 py-2 text-center text-sm font-medium text-foreground hover:bg-surface-muted"
+                    >
+                      Profile & Settings
+                    </Link>
+                  </>
                 )}
                 {user.roles.includes("recruiter") && (
-                  <Link
-                    to="/dashboard/recruiter/company"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="rounded-md border border-border px-4 py-2 text-center text-sm font-medium text-foreground hover:bg-surface-muted"
-                  >
-                    Manage Company
-                  </Link>
+                  <>
+                    <Link
+                      to="/dashboard/recruiter/jobs"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="rounded-md border border-border px-4 py-2 text-center text-sm font-medium text-foreground hover:bg-surface-muted"
+                    >
+                      Manage Jobs
+                    </Link>
+                    <Link
+                      to="/dashboard/recruiter/company"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="rounded-md border border-border px-4 py-2 text-center text-sm font-medium text-foreground hover:bg-surface-muted"
+                    >
+                      Manage Company
+                    </Link>
+                  </>
                 )}
                 <Button
                   variant="outline"

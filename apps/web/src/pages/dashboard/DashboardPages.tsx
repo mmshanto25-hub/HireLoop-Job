@@ -1,5 +1,14 @@
 import { Link, Navigate } from "react-router-dom";
-import { Briefcase, Building2, Plus, Settings, User } from "lucide-react";
+import {
+  Bookmark,
+  Briefcase,
+  Building2,
+  FileCheck2,
+  Plus,
+  Settings,
+  User,
+  Users,
+} from "lucide-react";
 import { useCurrentUser } from "@/features/auth/hooks";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Button } from "@/components/ui/Button";
@@ -25,14 +34,14 @@ export function SeekerDashboardPlaceholder() {
             Welcome back, {user?.fullName}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Manage your profile, resume, and explore new job opportunities.
+            Manage your applications, saved opportunities, and career profile.
           </p>
         </div>
         <div className="flex items-center gap-3">
           <Link to="/dashboard/seeker/settings">
             <Button variant="outline" size="sm">
               <Settings className="h-4 w-4 mr-1.5" aria-hidden="true" />
-              Settings & Resume
+              Settings
             </Button>
           </Link>
           <Link to="/jobs">
@@ -44,41 +53,66 @@ export function SeekerDashboardPlaceholder() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div className="rounded-2xl border border-border bg-surface p-6 shadow-card">
-          <div className="flex items-center gap-3 mb-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-soft text-brand-text">
-              <User className="h-5 w-5" aria-hidden="true" />
-            </span>
-            <h2 className="font-heading text-lg font-semibold text-foreground">
-              Candidate Profile
-            </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="rounded-2xl border border-border bg-surface p-6 shadow-card flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-soft text-brand-text">
+                <FileCheck2 className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <h2 className="font-heading text-lg font-semibold text-foreground">
+                My Applications
+              </h2>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Track status updates, recruiter responses, and interview schedules in real time.
+            </p>
           </div>
-          <p className="text-sm text-muted-foreground mb-4">
-            Keep your skills, bio, and PDF resume updated to receive matched job recommendations.
-          </p>
-          <Link to="/dashboard/seeker/settings">
+          <Link to="/dashboard/seeker/applications">
             <Button variant="outline" size="sm" className="w-full">
-              Edit Candidate Profile
+              View Applications
             </Button>
           </Link>
         </div>
 
-        <div className="rounded-2xl border border-border bg-surface p-6 shadow-card">
-          <div className="flex items-center gap-3 mb-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-soft text-accent">
-              <Briefcase className="h-5 w-5" aria-hidden="true" />
-            </span>
-            <h2 className="font-heading text-lg font-semibold text-foreground">
-              Search Open Roles
-            </h2>
+        <div className="rounded-2xl border border-border bg-surface p-6 shadow-card flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                <Bookmark className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <h2 className="font-heading text-lg font-semibold text-foreground">
+                Saved Jobs
+              </h2>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Review bookmarked positions and submit your application when you're ready.
+            </p>
           </div>
-          <p className="text-sm text-muted-foreground mb-4">
-            Filter through verified tech opportunities with transparent compensation bands.
-          </p>
-          <Link to="/jobs">
-            <Button size="sm" className="w-full">
-              Browse Open Positions
+          <Link to="/dashboard/seeker/saved">
+            <Button variant="outline" size="sm" className="w-full">
+              View Saved Jobs
+            </Button>
+          </Link>
+        </div>
+
+        <div className="rounded-2xl border border-border bg-surface p-6 shadow-card flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-muted text-foreground">
+                <User className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <h2 className="font-heading text-lg font-semibold text-foreground">
+                Profile & Resume
+              </h2>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Keep your headline, skills, and PDF resume up to date for instant 1-click applies.
+            </p>
+          </div>
+          <Link to="/dashboard/seeker/settings">
+            <Button variant="outline" size="sm" className="w-full">
+              Edit Profile
             </Button>
           </Link>
         </div>
@@ -98,7 +132,7 @@ export function RecruiterDashboardPlaceholder() {
             Recruiter Hub
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Manage your verified organization and publish job listings.
+            Manage your verified organization, job listings, and candidate applications.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -117,19 +151,42 @@ export function RecruiterDashboardPlaceholder() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div className="rounded-2xl border border-border bg-surface p-6 shadow-card">
-          <div className="flex items-center gap-3 mb-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-soft text-brand-text">
-              <Building2 className="h-5 w-5" aria-hidden="true" />
-            </span>
-            <h2 className="font-heading text-lg font-semibold text-foreground">
-              Company Registration
-            </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="rounded-2xl border border-border bg-surface p-6 shadow-card flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-soft text-brand-text">
+                <Briefcase className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <h2 className="font-heading text-lg font-semibold text-foreground">
+                Job Listings
+              </h2>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Draft, publish, edit, or close job openings. Monitor active listings quota.
+            </p>
           </div>
-          <p className="text-sm text-muted-foreground mb-4">
-            Submit your company name, industry, headquarters, and branding logo for verification.
-          </p>
+          <Link to="/dashboard/recruiter/jobs">
+            <Button size="sm" className="w-full">
+              Manage Job Listings
+            </Button>
+          </Link>
+        </div>
+
+        <div className="rounded-2xl border border-border bg-surface p-6 shadow-card flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-soft text-accent">
+                <Building2 className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <h2 className="font-heading text-lg font-semibold text-foreground">
+                Company Profile
+              </h2>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Submit your company name, industry, headquarters, and branding logo for verification.
+            </p>
+          </div>
           <Link to="/dashboard/recruiter/company">
             <Button variant="outline" size="sm" className="w-full">
               Manage Company Profile
@@ -137,21 +194,23 @@ export function RecruiterDashboardPlaceholder() {
           </Link>
         </div>
 
-        <div className="rounded-2xl border border-border bg-surface p-6 shadow-card">
-          <div className="flex items-center gap-3 mb-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-soft text-accent">
-              <Briefcase className="h-5 w-5" aria-hidden="true" />
-            </span>
-            <h2 className="font-heading text-lg font-semibold text-foreground">
-              Job Listings
-            </h2>
+        <div className="rounded-2xl border border-border bg-surface p-6 shadow-card flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                <Users className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <h2 className="font-heading text-lg font-semibold text-foreground">
+                Candidate Pipeline
+              </h2>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Review submitted applications, download resumes, and schedule candidate interviews.
+            </p>
           </div>
-          <p className="text-sm text-muted-foreground mb-4">
-            Draft, publish, edit, or close job openings. Track incoming candidates.
-          </p>
           <Link to="/dashboard/recruiter/jobs">
-            <Button size="sm" className="w-full">
-              Manage Job Listings
+            <Button variant="outline" size="sm" className="w-full">
+              Review Applicants
             </Button>
           </Link>
         </div>

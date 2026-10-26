@@ -11,6 +11,10 @@ import { createAdminRouter } from "./routes/admin.routes.js";
 import { createProfileRouter } from "./routes/profile.routes.js";
 import { createCompanyRouter, createAdminCompanyRouter } from "./routes/company.routes.js";
 import { createJobRouter } from "./routes/job.routes.js";
+import { createApplicationRouter } from "./routes/application.routes.js";
+import { createSavedJobRouter } from "./routes/saved-job.routes.js";
+import { createNotificationRouter } from "./routes/notification.routes.js";
+import { createDashboardRouter } from "./routes/dashboard.routes.js";
 import { createUploadRouter } from "./routes/upload.routes.js";
 import { createLogger, type Logger } from "./utils/logger.js";
 import { requestId } from "./middleware/requestId.js";
@@ -92,7 +96,11 @@ export function createApp({ env, logger, email }: AppDependencies): Express {
   app.use(`${API_PREFIX}/admin/companies`, createAdminCompanyRouter({ env }));
   app.use(`${API_PREFIX}/profiles`, createProfileRouter({ env }));
   app.use(`${API_PREFIX}/companies`, createCompanyRouter({ env }));
-  app.use(`${API_PREFIX}/jobs`, createJobRouter({ env }));
+  app.use(`${API_PREFIX}/jobs`, createJobRouter({ env, logger: log }));
+  app.use(`${API_PREFIX}/applications`, createApplicationRouter({ env, logger: log }));
+  app.use(`${API_PREFIX}/saved-jobs`, createSavedJobRouter({ env }));
+  app.use(`${API_PREFIX}/notifications`, createNotificationRouter({ env }));
+  app.use(`${API_PREFIX}/dashboard`, createDashboardRouter({ env }));
   app.use(`${API_PREFIX}/uploads`, createUploadRouter());
 
   app.use(notFoundHandler);

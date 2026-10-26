@@ -4,7 +4,7 @@ import { cn } from "@/lib/cn";
 export interface AvatarProps {
   name: string;
   src?: string | null;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
   className?: string;
 }
 
@@ -12,6 +12,7 @@ const sizeClasses = {
   sm: "h-8 w-8 text-xs",
   md: "h-10 w-10 text-sm",
   lg: "h-16 w-16 text-lg",
+  xl: "h-20 w-20 text-xl",
 } as const;
 
 function initialsOf(name: string): string {

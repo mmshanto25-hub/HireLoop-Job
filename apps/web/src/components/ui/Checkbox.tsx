@@ -5,12 +5,12 @@ import { cn } from "@/lib/cn";
 export interface CheckboxProps extends React.ComponentPropsWithoutRef<
   typeof CheckboxPrimitive.Root
 > {
-  label: string;
+  label?: string;
 }
 
-/** Accessible checkbox built on Radix. The visible label is always rendered. */
+/** Accessible checkbox built on Radix. The visible label is rendered if provided. */
 export function Checkbox({ label, id, className, ...props }: CheckboxProps) {
-  const inputId = id ?? `checkbox-${label.replace(/\s+/g, "-").toLowerCase()}`;
+  const inputId = id ?? (label ? `checkbox-${label.replace(/\s+/g, "-").toLowerCase()}` : undefined);
   return (
     <div className={cn("flex items-center gap-2.5", className)}>
       <CheckboxPrimitive.Root
@@ -26,9 +26,11 @@ export function Checkbox({ label, id, className, ...props }: CheckboxProps) {
           <Check className="h-3.5 w-3.5 text-brand-foreground" aria-hidden="true" />
         </CheckboxPrimitive.Indicator>
       </CheckboxPrimitive.Root>
-      <label htmlFor={inputId} className="text-sm text-foreground select-none">
-        {label}
-      </label>
+      {label ? (
+        <label htmlFor={inputId} className="text-sm text-foreground select-none cursor-pointer">
+          {label}
+        </label>
+      ) : null}
     </div>
   );
 }

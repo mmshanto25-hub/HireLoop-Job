@@ -8,6 +8,10 @@ import { createEmailSender, type EmailSender } from "./services/email.service.js
 import { csrfProtection } from "./middleware/csrf.js";
 import { createAuthRouter } from "./routes/auth.routes.js";
 import { createAdminRouter } from "./routes/admin.routes.js";
+import { createProfileRouter } from "./routes/profile.routes.js";
+import { createCompanyRouter, createAdminCompanyRouter } from "./routes/company.routes.js";
+import { createJobRouter } from "./routes/job.routes.js";
+import { createUploadRouter } from "./routes/upload.routes.js";
 import { createLogger, type Logger } from "./utils/logger.js";
 import { requestId } from "./middleware/requestId.js";
 import { createErrorHandler, notFoundHandler } from "./middleware/errorHandler.js";
@@ -55,10 +59,11 @@ export function createApp({ env, logger, email }: AppDependencies): Express {
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'none'"],
+          imgSrc: ["'self'", "data:", "blob:"],
           frameAncestors: ["'none'"],
         },
       },
-      crossOriginResourcePolicy: { policy: "same-site" },
+      crossOriginResourcePolicy: { policy: "cross-origin" },
     }),
   );
 
@@ -84,6 +89,11 @@ export function createApp({ env, logger, email }: AppDependencies): Express {
   app.use(API_PREFIX, createHealthRouter({ version: API_VERSION }));
   app.use(`${API_PREFIX}/auth`, createAuthRouter({ env, email: emailSender, logger: log }));
   app.use(`${API_PREFIX}/admin`, createAdminRouter({ env }));
+  app.use(`${API_PREFIX}/admin/companies`, createAdminCompanyRouter({ env }));
+  app.use(`${API_PREFIX}/profiles`, createProfileRouter({ env }));
+  app.use(`${API_PREFIX}/companies`, createCompanyRouter({ env }));
+  app.use(`${API_PREFIX}/jobs`, createJobRouter({ env }));
+  app.use(`${API_PREFIX}/uploads`, createUploadRouter());
 
   app.use(notFoundHandler);
   app.use(createErrorHandler(log));

@@ -114,3 +114,50 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     return (await rawRequest(path, options)) as T;
   }
 }
+
+/**
+ * Upload wrapper for multipart/form-data.
+ * Omits Content-Type so browser sets boundary.
+ */
+export async function apiUpload<T>(path: string, formData: FormData): Promise<T> {
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    "X-CSRF-Token": readCsrfToken(),
+  };
+
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_PATH}${path}`, {
+      method: "POST",
+      credentials: "include",
+      headers,
+      body: formData,
+    });
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") throw err;
+    throw new ApiClientError(0, "NETWORK_ERROR", "Network request failed. Check your connection.");
+  }
+
+  let payload: ApiResponse<unknown> | undefined;
+  try {
+    payload = (await response.json()) as ApiResponse<unknown>;
+  } catch {
+    throw new ApiClientError(
+      response.status,
+      "INVALID_RESPONSE",
+      "The server sent an unexpected response.",
+    );
+  }
+
+  if (!payload.success) {
+    const failure = payload as ApiFailure;
+    throw new ApiClientError(
+      response.status,
+      failure.error.code,
+      failure.error.message,
+      failure.error.details,
+      failure.meta?.requestId,
+    );
+  }
+  return (payload as ApiSuccess<unknown>).data as T;
+}

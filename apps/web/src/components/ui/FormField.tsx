@@ -11,11 +11,11 @@ export interface FieldControlProps {
 export interface FormFieldProps {
   label: string;
   hint?: string;
-  error?: string;
+  error?: any;
   required?: boolean;
   className?: string;
-  /** Render prop: the control receives the id and ARIA attributes it needs. */
-  children: (control: FieldControlProps) => ReactNode;
+  /** Render prop or direct children. If render prop, receives the id and ARIA attributes. */
+  children: ReactNode | ((control: FieldControlProps) => ReactNode);
 }
 
 /**
@@ -26,8 +26,9 @@ export function FormField({ label, hint, error, required, className, children }:
   const id = useId();
   const hintId = `${id}-hint`;
   const errorId = `${id}-error`;
+  const errorMessage = typeof error === "string" ? error : error?.message ? String(error.message) : undefined;
   const describedBy =
-    [hint ? hintId : null, error ? errorId : null].filter(Boolean).join(" ") || undefined;
+    [hint ? hintId : null, errorMessage ? errorId : null].filter(Boolean).join(" ") || undefined;
 
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
@@ -39,27 +40,31 @@ export function FormField({ label, hint, error, required, className, children }:
           </span>
         ) : null}
       </label>
-      {children({
-        id,
-        "aria-describedby": describedBy,
-        "aria-invalid": error ? true : undefined,
-        "aria-required": required || undefined,
-      })}
-      {hint && !error ? (
+      {typeof children === "function"
+        ? children({
+            id,
+            "aria-describedby": describedBy,
+            "aria-invalid": Boolean(errorMessage) || undefined,
+            "aria-required": required || undefined,
+          })
+        : children}
+      {hint && !errorMessage ? (
         <p id={hintId} className="text-xs text-subtle-foreground">
           {hint}
         </p>
       ) : null}
-      <ValidationMessage id={errorId} message={error} />
+      <ValidationMessage id={errorId} message={errorMessage} />
     </div>
   );
 }
 
-export function ValidationMessage({ id, message }: { id?: string; message?: string }) {
+export function ValidationMessage({ id, message }: { id?: string; message?: any }) {
   if (!message) return null;
+  const text = typeof message === "string" ? message : message?.message ? String(message.message) : null;
+  if (!text) return null;
   return (
     <p id={id} role="alert" className="text-sm text-danger">
-      {message}
+      {text}
     </p>
   );
 }

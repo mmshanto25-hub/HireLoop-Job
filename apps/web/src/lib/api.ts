@@ -1,6 +1,7 @@
 import type { ApiFailure, ApiFieldError, ApiResponse, ApiSuccess } from "@hireloop/shared";
 
-export const API_BASE_PATH = "/api/v1";
+const apiOrigin = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/+$/, "") ?? "";
+export const API_BASE_PATH = `${apiOrigin}/api/v1`;
 
 /** Error raised for any failed API call. Components show `message` and may use `details`. */
 export class ApiClientError extends Error {

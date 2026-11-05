@@ -20,12 +20,6 @@ class CapturingSender implements EmailSender {
   async send(message: EmailMessage) {
     this.messages.push(message);
   }
-  tokenFor(to: string, path: string): string {
-    const msg = [...this.messages].reverse().find((m) => m.to === to && m.text.includes(path));
-    const match = msg?.text.match(new RegExp(`${path}\\?token=([^\\s]+)`));
-    if (!match?.[1]) throw new Error(`No ${path} token captured for ${to}`);
-    return decodeURIComponent(match[1]);
-  }
 }
 
 function cookieValue(res: request.Response, name: string): string | undefined {
@@ -62,7 +56,7 @@ describe.skipIf(!uri)("auth flow (integration, real MongoDB)", () => {
     await mongoose.disconnect();
   });
 
-  it("returns the same response for a new and an existing email (no enumeration)", async () => {
+  it("creates and signs in a new account, but does not sign in an existing email", async () => {
     const first = await request(app)
       .post("/api/v1/auth/register")
       .set("Origin", origin)
@@ -71,9 +65,15 @@ describe.skipIf(!uri)("auth flow (integration, real MongoDB)", () => {
       .post("/api/v1/auth/register")
       .set("Origin", origin)
       .send(seeker);
-    expect(first.status).toBe(202);
+    expect(first.status).toBe(201);
+    expect(first.body.data.user.email).toBe(seeker.email);
+    expect(cookieValue(first, "hl_access")).toBeTruthy();
+    expect(cookieValue(first, "hl_refresh")).toBeTruthy();
     expect(second.status).toBe(202);
-    expect(first.body.data).toEqual(second.body.data);
+    expect(second.body.data.message).toBeTruthy();
+    expect(cookieValue(second, "hl_access")).toBeUndefined();
+    expect(await UserModel.exists({ email: seeker.email, emailVerifiedAt: { $ne: null } })).toBeTruthy();
+    expect(email.messages).toHaveLength(0);
   });
 
   it("refuses admin self-registration", async () => {
@@ -84,29 +84,7 @@ describe.skipIf(!uri)("auth flow (integration, real MongoDB)", () => {
     expect(res.status).toBe(400);
   });
 
-  it("blocks login until the email is verified", async () => {
-    const res = await request(app)
-      .post("/api/v1/auth/login")
-      .set("Origin", origin)
-      .send({ email: seeker.email, password: seeker.password });
-    expect(res.status).toBe(403);
-    expect(res.body.error.code).toBe("EMAIL_NOT_VERIFIED");
-  });
-
-  it("verifies, signs in, and returns the current user", async () => {
-    const token = email.tokenFor(seeker.email, "/verify-email");
-    const verified = await request(app)
-      .post("/api/v1/auth/verify-email")
-      .set("Origin", origin)
-      .send({ token });
-    expect(verified.status).toBe(200);
-
-    const reused = await request(app)
-      .post("/api/v1/auth/verify-email")
-      .set("Origin", origin)
-      .send({ token });
-    expect(reused.status).toBe(400);
-
+  it("signs in immediately after registration and returns the current user", async () => {
     const login = await request(app)
       .post("/api/v1/auth/login")
       .set("Origin", origin)

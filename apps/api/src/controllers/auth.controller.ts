@@ -40,6 +40,7 @@ export interface AuthControllerDeps {
 }
 
 const GENERIC_ACCEPTED = "If that email can be used, we have sent instructions. Check your inbox.";
+const GENERIC_REGISTERED = "If that email can be used, you can sign in.";
 
 /** Sets the access, refresh, and CSRF cookies for a new or rotated session. */
 function applySession(
@@ -71,8 +72,13 @@ export function createAuthController(deps: AuthControllerDeps) {
 
   const register = asyncHandler(async (req: Request, res: Response) => {
     const input = registerSchema.parse(req.body);
-    await auth.register(svc, input);
-    sendSuccess(res, { message: GENERIC_ACCEPTED }, { status: 202 });
+    const result = await auth.register(svc, input, req.get("user-agent"));
+    if (!result) {
+      sendSuccess(res, { message: GENERIC_REGISTERED }, { status: 202 });
+      return;
+    }
+    applySession(res, env, result.session);
+    sendSuccess(res, { user: result.user }, { status: 201 });
   });
 
   const verifyEmail = asyncHandler(async (req: Request, res: Response) => {

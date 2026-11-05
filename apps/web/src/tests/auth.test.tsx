@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { LoginPage } from "@/pages/auth/LoginPage";
+import { SignupPage } from "@/pages/auth/SignupPage";
 import { readCsrfToken } from "@/lib/api";
 import { safeNext } from "@/features/auth/form-utils";
 
@@ -67,6 +68,40 @@ describe("RequireAuth", () => {
     );
     expect(await screen.findByText("Login screen")).toBeInTheDocument();
     expect(screen.queryByText("Secret dashboard")).not.toBeInTheDocument();
+  });
+});
+
+describe("SignupPage", () => {
+  it("signs in and redirects after account creation", async () => {
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      },
+    );
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      jsonResponse(201, {
+        success: true,
+        data: { user: { id: "user-1", email: "ada@example.com", roles: ["seeker"] } },
+        meta: {},
+      }),
+    );
+    renderWith(
+      <Routes>
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/dashboard" element={<p>Signed-in dashboard</p>} />
+      </Routes>,
+      "/signup",
+    );
+
+    await userEvent.type(screen.getByLabelText(/^Full name/), "Ada Lovelace");
+    await userEvent.type(screen.getByLabelText(/^Email/), "ada@example.com");
+    await userEvent.type(screen.getByLabelText(/^Password/), "abcdefg1");
+    await userEvent.click(screen.getByRole("button", { name: "Create account" }));
+
+    expect(await screen.findByText("Signed-in dashboard")).toBeInTheDocument();
   });
 });
 

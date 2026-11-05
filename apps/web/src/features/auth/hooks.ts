@@ -37,6 +37,16 @@ export function useLogin() {
   });
 }
 
+export function useRegister() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: authApi.register,
+    onSuccess: (result) => {
+      if ("user" in result) queryClient.setQueryData(authKeys.me, result.user);
+    },
+  });
+}
+
 export function useLogout() {
   const queryClient = useQueryClient();
   return useMutation({

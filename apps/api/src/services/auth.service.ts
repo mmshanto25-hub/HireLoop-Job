@@ -4,7 +4,7 @@ import { OneTimeTokenModel, UserModel, UserRoleModel, type UserDocument } from "
 import { AppError } from "../utils/AppError.js";
 import { generateToken, sha256Hex } from "../utils/crypto.js";
 import type { Logger } from "../utils/logger.js";
-import { accountExistsEmail, passwordResetEmail, verificationEmail } from "../emails/templates.js";
+import { passwordResetEmail, verificationEmail } from "../emails/templates.js";
 import { sendEmailSafely, type EmailSender } from "./email.service.js";
 import { burnPasswordCheck, hashPassword, verifyPassword } from "./password.service.js";
 import {
@@ -122,30 +122,17 @@ async function sendVerificationEmail(
   );
 }
 
-async function notifyExistingAccount(deps: AuthDeps, fullName: string, email: string) {
-  await sendEmailSafely(
-    deps.email,
-    {
-      to: email,
-      ...accountExistsEmail({ fullName, loginUrl: `${deps.env.WEB_URL}/login` }),
-    },
-    deps.logger,
-  );
-}
-
-/**
- * Registers a new account. The response is identical whether or not the email
- * is already registered, so the endpoint cannot be used to discover accounts.
- */
-export async function register(deps: AuthDeps, input: RegisterInput): Promise<void> {
+/** Registers a new account and starts a session, or returns null for an existing email. */
+export async function register(
+  deps: AuthDeps,
+  input: RegisterInput,
+  userAgent: string | undefined,
+): Promise<LoginResult | null> {
   // Hash for every request, including duplicates, so timing does not reveal existing accounts.
   const passwordHash = await hashPassword(input.password);
 
   const existing = await UserModel.exists({ email: input.email });
-  if (existing) {
-    await notifyExistingAccount(deps, input.fullName, input.email);
-    return;
-  }
+  if (existing) return null;
 
   let user: UserDocument;
   try {
@@ -154,13 +141,13 @@ export async function register(deps: AuthDeps, input: RegisterInput): Promise<vo
       email: input.email,
       passwordHash,
       status: "active",
+      emailVerifiedAt: new Date(),
       authProviders: [{ provider: "password", providerUserId: null }],
     });
   } catch (err) {
     if (isDuplicateKeyError(err)) {
       // A concurrent registration for the same email won the race.
-      await notifyExistingAccount(deps, input.fullName, input.email);
-      return;
+      return null;
     }
     throw err;
   }
@@ -173,12 +160,8 @@ export async function register(deps: AuthDeps, input: RegisterInput): Promise<vo
     throw err;
   }
 
-  await sendVerificationEmail(deps, {
-    id: String(user._id),
-    fullName: user.fullName,
-    email: user.email,
-  });
   deps.logger.info({ userId: String(user._id), role: input.role }, "Account registered");
+  return completeSignIn(deps, user, userAgent);
 }
 
 export async function verifyEmail(deps: AuthDeps, token: string): Promise<void> {
@@ -205,8 +188,8 @@ export async function resendVerification(deps: AuthDeps, email: string): Promise
 
 /**
  * Signs in with email and password. Unknown emails, wrong passwords and
- * deactivated accounts all return the same error. Suspension and unverified
- * email are reported only after the password is correct.
+ * deactivated accounts all return the same error. Suspension is reported only
+ * after the password is correct.
  */
 export async function login(
   deps: AuthDeps,
@@ -227,7 +210,6 @@ export async function login(
   }
 
   if (user.status === "suspended") throw AppError.accountSuspended();
-  if (!user.emailVerifiedAt) throw AppError.emailNotVerified();
 
   return completeSignIn(deps, user, userAgent);
 }

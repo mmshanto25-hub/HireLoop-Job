@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema, type RegisterInput } from "@hireloop/shared";
@@ -7,6 +7,7 @@ import { AuthLayout, FormAlert } from "@/components/auth/AuthLayout";
 import { PasswordInput } from "@/components/auth/PasswordInput";
 import { Button, FormField, Input, RadioGroup, ValidationMessage } from "@/components/ui";
 import { authApi, googleSignInUrl } from "@/features/auth/api";
+import { useRegister } from "@/features/auth/hooks";
 import { applyServerErrors, safeNext } from "@/features/auth/form-utils";
 
 const ROLE_OPTIONS = [
@@ -20,9 +21,10 @@ const ROLE_OPTIONS = [
 
 export function SignupPage() {
   const [params] = useSearchParams();
+  const navigate = useNavigate();
   const next = safeNext(params.get("next"));
   const initialRole = params.get("role") === "recruiter" ? "recruiter" : "seeker";
-  const [sentTo, setSentTo] = useState<string | null>(null);
+  const registerAccount = useRegister();
 
   const {
     register,
@@ -39,35 +41,21 @@ export function SignupPage() {
   const onSubmit = handleSubmit(async (values) => {
     setFormError(undefined);
     try {
-      await authApi.register(values);
-      // The response is the same whether or not the email exists, so the screen does not reveal it.
-      setSentTo(values.email);
+      const result = await registerAccount.mutateAsync(values);
+      if ("user" in result) {
+        navigate(next, { replace: true });
+      } else {
+        setFormError("An account with this email may already exist. Try signing in instead.");
+      }
     } catch (err) {
       setFormError(applyServerErrors(err, setError));
     }
   });
 
-  if (sentTo) {
-    return (
-      <AuthLayout
-        title="Check your inbox"
-        description={`If ${sentTo} can be used for a new account, we sent a verification link. It expires in 24 hours.`}
-      >
-        <p className="text-sm text-muted-foreground">
-          Didn't get it? Check your spam folder, or{" "}
-          <Link to="/login" className="font-semibold text-brand-text hover:underline">
-            go to sign in
-          </Link>{" "}
-          once you have verified.
-        </p>
-      </AuthLayout>
-    );
-  }
-
   return (
     <AuthLayout
       title="Create your account"
-      description="Free to start. Verify your email to sign in."
+      description="Free to start. Create an account and sign in right away."
     >
       <form onSubmit={onSubmit} className="space-y-5" noValidate>
         <FormAlert message={formError} />

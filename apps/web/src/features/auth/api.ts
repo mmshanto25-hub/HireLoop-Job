@@ -7,10 +7,12 @@ export interface LoginResponse {
   user: AuthUser;
 }
 
+export type RegisterResponse = LoginResponse | { message: string };
+
 export const authApi = {
   me: () => apiRequest<{ user: AuthUser }>("/auth/me"),
   register: (input: { fullName: string; email: string; password: string; role: UserRole }) =>
-    apiRequest<{ message: string }>("/auth/register", { method: "POST", body: input }),
+    apiRequest<RegisterResponse>("/auth/register", { method: "POST", body: input }),
   login: (input: { email: string; password: string }) =>
     apiRequest<LoginResponse>("/auth/login", { method: "POST", body: input }),
   logout: () => apiRequest<{ loggedOut: boolean }>("/auth/logout", { method: "POST" }),

@@ -25,8 +25,25 @@ export function csrfProtection(env: Pick<Env, "WEB_URL" | "API_URL">) {
     }
 
     const origin = req.get("origin");
-    if (origin !== undefined && !allowedOrigins.has(origin)) {
+    const isTrustedOrigin =
+      origin !== undefined &&
+      (allowedOrigins.has(origin) ||
+        (env.WEB_URL.includes("vercel.app") && origin.endsWith(".vercel.app")));
+
+    if (origin !== undefined && !isTrustedOrigin) {
       next(AppError.forbidden("This request came from an untrusted origin."));
+      return;
+    }
+
+    // Auth entry routes establish a new session and must never fail because of stale cookies.
+    const isAuthRoute =
+      req.path.includes("/auth/login") ||
+      req.path.includes("/auth/register") ||
+      req.path.includes("/auth/forgot-password") ||
+      req.path.includes("/auth/reset-password");
+
+    if (isAuthRoute) {
+      next();
       return;
     }
 
@@ -38,6 +55,14 @@ export function csrfProtection(env: Pick<Env, "WEB_URL" | "API_URL">) {
 
     const cookieToken = req.cookies?.[CSRF_COOKIE];
     const headerToken = req.get("x-csrf-token");
+
+    // For trusted cross-site origins (e.g. Vercel frontend calling Render backend),
+    // document.cookie cannot read cross-domain cookies. If origin is verified, allow.
+    if (isTrustedOrigin && !headerToken) {
+      next();
+      return;
+    }
+
     if (
       typeof cookieToken !== "string" ||
       typeof headerToken !== "string" ||

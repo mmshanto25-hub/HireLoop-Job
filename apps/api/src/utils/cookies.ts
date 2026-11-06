@@ -14,14 +14,12 @@ export const OAUTH_STATE_COOKIE = "hl_oauth";
 export const ACCESS_COOKIE_MAX_AGE_MS = 15 * 60 * 1000;
 export const REFRESH_COOKIE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 
-/** The refresh cookie is sent only to the auth routes, never to the rest of the API. */
-export const REFRESH_COOKIE_PATH = "/api/v1/auth";
-
 function baseOptions(env: Pick<Env, "NODE_ENV">): CookieOptions {
+  const isProd = env.NODE_ENV === "production";
   return {
     httpOnly: true,
-    secure: env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
     path: "/",
   };
 }
@@ -37,21 +35,22 @@ export function setSessionCookies(
   });
   res.cookie(REFRESH_COOKIE, tokens.refreshValue, {
     ...baseOptions(env),
-    path: REFRESH_COOKIE_PATH,
+    path: "/",
     maxAge: REFRESH_COOKIE_MAX_AGE_MS,
   });
 }
 
 export function clearSessionCookies(res: Response, env: Pick<Env, "NODE_ENV">): void {
   res.clearCookie(ACCESS_COOKIE, { ...baseOptions(env) });
-  res.clearCookie(REFRESH_COOKIE, { ...baseOptions(env), path: REFRESH_COOKIE_PATH });
+  res.clearCookie(REFRESH_COOKIE, { ...baseOptions(env), path: "/" });
 }
 
 export function setCsrfCookie(res: Response, env: Pick<Env, "NODE_ENV">, token: string): void {
+  const isProd = env.NODE_ENV === "production";
   res.cookie(CSRF_COOKIE, token, {
     httpOnly: false,
-    secure: env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
     path: "/",
     maxAge: REFRESH_COOKIE_MAX_AGE_MS,
   });
@@ -62,13 +61,20 @@ export function setOauthStateCookie(
   env: Pick<Env, "NODE_ENV">,
   value: string,
 ): void {
+  const isProd = env.NODE_ENV === "production";
   res.cookie(OAUTH_STATE_COOKIE, value, {
     ...baseOptions(env),
+    sameSite: isProd ? "none" : "lax",
     path: "/api/v1/auth/google",
     maxAge: 10 * 60 * 1000,
   });
 }
 
 export function clearOauthStateCookie(res: Response, env: Pick<Env, "NODE_ENV">): void {
-  res.clearCookie(OAUTH_STATE_COOKIE, { ...baseOptions(env), path: "/api/v1/auth/google" });
+  const isProd = env.NODE_ENV === "production";
+  res.clearCookie(OAUTH_STATE_COOKIE, {
+    ...baseOptions(env),
+    sameSite: isProd ? "none" : "lax",
+    path: "/api/v1/auth/google",
+  });
 }

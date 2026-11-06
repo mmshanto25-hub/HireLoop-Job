@@ -160,6 +160,12 @@ export async function register(
     throw err;
   }
 
+  await sendVerificationEmail(deps, {
+    id: String(user._id),
+    fullName: user.fullName,
+    email: user.email,
+  });
+
   deps.logger.info({ userId: String(user._id), role: input.role }, "Account registered");
   return completeSignIn(deps, user, userAgent);
 }

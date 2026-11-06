@@ -48,8 +48,10 @@ function applySession(
   env: Env,
   issued: { accessToken: string; refreshValue: string },
 ) {
+  const csrfToken = generateToken(24);
   setSessionCookies(res, env, issued);
-  setCsrfCookie(res, env, generateToken(24));
+  setCsrfCookie(res, env, csrfToken);
+  res.setHeader("X-CSRF-Token", csrfToken);
 }
 
 function refreshSessionId(value: string | undefined): string | null {

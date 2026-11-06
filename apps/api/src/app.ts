@@ -73,13 +73,23 @@ export function createApp({ env, logger, email }: AppDependencies): Express {
 
   // Explicit origin allow-list. Credentials are enabled for the cookie-based
   // authentication added in Phase 2. Wildcard origins are never used.
+  const allowedOrigins = new Set([env.WEB_URL, env.API_URL]);
+
   app.use(
     cors({
-      origin: [env.WEB_URL],
+      origin: (requestOrigin, callback) => {
+        if (!requestOrigin) return callback(null, true);
+        if (allowedOrigins.has(requestOrigin)) return callback(null, true);
+        // Allow vercel preview URLs if WEB_URL is hosted on vercel
+        if (env.WEB_URL.includes("vercel.app") && requestOrigin.endsWith(".vercel.app")) {
+          return callback(null, true);
+        }
+        return callback(null, false);
+      },
       credentials: true,
       methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "X-Request-Id", "X-CSRF-Token"],
-      exposedHeaders: ["X-Request-Id"],
+      exposedHeaders: ["X-Request-Id", "X-CSRF-Token"],
       maxAge: 600,
     }),
   );

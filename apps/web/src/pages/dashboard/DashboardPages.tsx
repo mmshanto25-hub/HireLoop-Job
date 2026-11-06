@@ -23,6 +23,16 @@ export function DashboardRedirect() {
   return <Navigate to="/dashboard/seeker" replace />;
 }
 
+/** Sends each signed-in user to their respective profile page based on role */
+export function ProfileRedirect() {
+  const { data: user, isPending } = useCurrentUser();
+  if (isPending) return <Skeleton className="m-10 h-40" />;
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.roles.includes("admin")) return <Navigate to="/dashboard/admin/profile" replace />;
+  if (user.roles.includes("recruiter")) return <Navigate to="/dashboard/recruiter/profile" replace />;
+  return <Navigate to="/dashboard/seeker/settings" replace />;
+}
+
 export function SeekerDashboardPlaceholder() {
   const { data: user } = useCurrentUser();
 

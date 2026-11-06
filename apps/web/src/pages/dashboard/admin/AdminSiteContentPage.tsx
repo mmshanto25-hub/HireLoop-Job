@@ -710,7 +710,7 @@ export function AdminSiteContentPage() {
                     })
                   }
                   className="mt-1.5"
-                  placeholder="/auth/signup"
+                  placeholder="/signup"
                 />
               </div>
 

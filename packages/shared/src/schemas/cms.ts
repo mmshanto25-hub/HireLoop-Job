@@ -43,7 +43,7 @@ export const headerSettingsSchema = z.object({
   navLinks: z.array(headerNavLinkSchema).default([]),
   primaryCta: z.object({
     label: z.string().trim().max(50).default("Get Started"),
-    path: z.string().trim().max(200).default("/auth/signup"),
+    path: z.string().trim().max(200).default("/signup"),
     visible: z.boolean().default(true),
   }),
 });
@@ -70,7 +70,7 @@ export const homePageSettingsSchema = z.object({
     primaryCtaText: z.string().trim().max(50).default("Browse jobs"),
     primaryCtaUrl: z.string().trim().max(200).default("/jobs"),
     secondaryCtaText: z.string().trim().max(50).default("Post a job"),
-    secondaryCtaUrl: z.string().trim().max(200).default("/auth/signup?role=recruiter"),
+    secondaryCtaUrl: z.string().trim().max(200).default("/signup?role=recruiter"),
     showLiveCounter: z.boolean().default(true),
     customStats: z.array(heroStatItemSchema).default([]),
   }),
@@ -99,7 +99,7 @@ export const homePageSettingsSchema = z.object({
     title: z.string().trim().max(150).default("Ready to accelerate your hiring?"),
     description: z.string().trim().max(400).default("Create your recruiter account in seconds, verify your company, and start publishing active listings today."),
     buttonText: z.string().trim().max(50).default("Create an employer account"),
-    buttonUrl: z.string().trim().max(200).default("/auth/signup?role=recruiter"),
+    buttonUrl: z.string().trim().max(200).default("/signup?role=recruiter"),
   }),
   faq: z.object({
     visible: z.boolean().default(true),
@@ -197,7 +197,7 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
     ],
     primaryCta: {
       label: "Get Started",
-      path: "/auth/signup",
+      path: "/signup",
       visible: true,
     },
   },
@@ -210,7 +210,7 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
       primaryCtaText: "Browse jobs",
       primaryCtaUrl: "/jobs",
       secondaryCtaText: "Post a job",
-      secondaryCtaUrl: "/auth/signup?role=recruiter",
+      secondaryCtaUrl: "/signup?role=recruiter",
       showLiveCounter: true,
       customStats: [],
     },
@@ -239,7 +239,7 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
       title: "Ready to accelerate your hiring?",
       description: "Create your recruiter account in seconds, verify your company, and start publishing active listings today.",
       buttonText: "Create an employer account",
-      buttonUrl: "/auth/signup?role=recruiter",
+      buttonUrl: "/signup?role=recruiter",
     },
     faq: {
       visible: true,
@@ -302,7 +302,7 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
         title: "For Employers",
         order: 2,
         links: [
-          { id: "l-5", label: "Post a job", url: "/auth/signup?role=recruiter", isExternal: false },
+          { id: "l-5", label: "Post a job", url: "/signup?role=recruiter", isExternal: false },
           { id: "l-6", label: "Recruiter workspace", url: "/dashboard/recruiter", isExternal: false },
           { id: "l-7", label: "Pricing plans", url: "/pricing", isExternal: false },
           { id: "l-8", label: "Company moderation", url: "/companies", isExternal: false },

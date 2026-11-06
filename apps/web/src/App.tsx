@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { RequireAuth, RequireRole } from "@/components/auth/RequireAuth";
@@ -37,7 +37,7 @@ import { AdminJobsPage } from "@/pages/dashboard/admin/AdminJobsPage";
 import { AdminPaymentsPage } from "@/pages/dashboard/admin/AdminPaymentsPage";
 import { AdminSiteContentPage } from "@/pages/dashboard/admin/AdminSiteContentPage";
 import { AdminProfilePage } from "@/pages/dashboard/admin/AdminProfilePage";
-import { DashboardRedirect } from "@/pages/dashboard/DashboardPages";
+import { DashboardRedirect, ProfileRedirect } from "@/pages/dashboard/DashboardPages";
 
 export function App() {
   return (
@@ -56,17 +56,39 @@ export function App() {
         <Route path="terms" element={<TermsOfServicePage />} />
         <Route path="design-system" element={<DesignSystemPage />} />
 
-        {/* Auth pages */}
+        {/* Auth pages & aliases */}
         <Route path="login" element={<LoginPage />} />
         <Route path="signup" element={<SignupPage />} />
+        <Route path="register" element={<SignupPage />} />
         <Route path="forgot-password" element={<ForgotPasswordPage />} />
         <Route path="reset-password" element={<ResetPasswordPage />} />
         <Route path="verify-email" element={<VerifyEmailPage />} />
+
+        {/* /auth/* path aliases for complete backward-compatibility */}
+        <Route path="auth/login" element={<LoginPage />} />
+        <Route path="auth/signup" element={<SignupPage />} />
+        <Route path="auth/register" element={<SignupPage />} />
+        <Route path="auth/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="auth/reset-password" element={<ResetPasswordPage />} />
+        <Route path="auth/verify-email" element={<VerifyEmailPage />} />
+        <Route path="auth" element={<Navigate to="/login" replace />} />
+
+        {/* Singular aliases for convenience */}
+        <Route path="job" element={<JobsPage />} />
+        <Route path="job/:slugOrId" element={<JobDetailsPage />} />
+        <Route path="company" element={<CompaniesPage />} />
+        <Route path="company/:slug" element={<CompanyProfilePage />} />
+
+        {/* Direct profile & settings redirects */}
+        <Route path="profile" element={<ProfileRedirect />} />
+        <Route path="settings" element={<ProfileRedirect />} />
       </Route>
 
       {/* Authenticated Dashboard Routes wrapped in DashboardLayout (with Collapsible Sidebar & Header) */}
       <Route element={<RequireAuth />}>
         <Route path="dashboard" element={<DashboardRedirect />} />
+        <Route path="dashboard/profile" element={<ProfileRedirect />} />
+        <Route path="dashboard/settings" element={<ProfileRedirect />} />
 
         <Route element={<DashboardLayout />}>
           {/* Seeker Dashboard */}

@@ -17,3 +17,5 @@ export * from "./types/subscription.js";
 export * from "./types/dashboard.js";
 export * from "./types/admin.js";
 export * from "./schemas/subscription.js";
+export * from "./types/cms.js";
+export * from "./schemas/cms.js";

@@ -2,6 +2,12 @@ import { z } from "zod";
 
 export const updateSeekerProfileSchema = z
   .object({
+    fullName: z
+      .string()
+      .trim()
+      .min(2, "Enter your full name")
+      .max(100, "Name must be 100 characters or fewer")
+      .optional(),
     headline: z.string().trim().max(120, "Headline must be 120 characters or fewer").optional().nullable(),
     bio: z.string().trim().max(2000, "Bio must be 2000 characters or fewer").optional().nullable(),
     skills: z.array(z.string().trim().min(1).max(50)).max(30, "Maximum 30 skills").optional(),
@@ -35,6 +41,12 @@ export type UpdateSeekerProfileInput = z.infer<typeof updateSeekerProfileSchema>
 
 export const updateRecruiterProfileSchema = z
   .object({
+    fullName: z
+      .string()
+      .trim()
+      .min(2, "Enter your full name")
+      .max(100, "Name must be 100 characters or fewer")
+      .optional(),
     jobTitle: z.string().trim().max(100, "Job title must be 100 characters or fewer").optional().nullable(),
     phone: z.string().trim().max(20).optional().nullable(),
     socialLinks: z

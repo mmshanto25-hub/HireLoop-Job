@@ -11,7 +11,7 @@ export const profilesApi = {
   getMe: () => apiRequest<ProfileResponse>("/profiles/me"),
 
   updateMe: (data: UpdateSeekerProfileInput | UpdateRecruiterProfileInput | { fullName: string }) =>
-    apiRequest<{ seekerProfile?: SeekerProfileData; recruiterProfile?: RecruiterProfileData; message?: string }>(
+    apiRequest<{ fullName?: string; seekerProfile?: SeekerProfileData; recruiterProfile?: RecruiterProfileData; message?: string }>(
       "/profiles/me",
       { method: "PATCH", body: data },
     ),

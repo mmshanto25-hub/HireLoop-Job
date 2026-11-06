@@ -25,6 +25,7 @@ import { JobFormPage } from "@/pages/dashboard/recruiter/JobFormPage";
 import { ApplicantManagementPage } from "@/pages/dashboard/recruiter/ApplicantManagementPage";
 import { RecruiterOverviewPage } from "@/pages/dashboard/recruiter/RecruiterOverviewPage";
 import { RecruiterAnalyticsPage } from "@/pages/dashboard/recruiter/RecruiterAnalyticsPage";
+import { RecruiterProfilePage } from "@/pages/dashboard/recruiter/RecruiterProfilePage";
 import { SeekerOverviewPage } from "@/pages/dashboard/seeker/SeekerOverviewPage";
 import { SeekerSettingsPage } from "@/pages/dashboard/seeker/SeekerSettingsPage";
 import { SeekerApplicationsPage } from "@/pages/dashboard/seeker/SeekerApplicationsPage";
@@ -34,6 +35,8 @@ import { AdminUsersPage } from "@/pages/dashboard/admin/AdminUsersPage";
 import { AdminCompaniesPage } from "@/pages/dashboard/admin/AdminCompaniesPage";
 import { AdminJobsPage } from "@/pages/dashboard/admin/AdminJobsPage";
 import { AdminPaymentsPage } from "@/pages/dashboard/admin/AdminPaymentsPage";
+import { AdminSiteContentPage } from "@/pages/dashboard/admin/AdminSiteContentPage";
+import { AdminProfilePage } from "@/pages/dashboard/admin/AdminProfilePage";
 import { DashboardRedirect } from "@/pages/dashboard/DashboardPages";
 
 export function App() {
@@ -83,7 +86,8 @@ export function App() {
             <Route path="dashboard/recruiter/jobs/:jobId/edit" element={<JobFormPage />} />
             <Route path="dashboard/recruiter/jobs/:jobId/applicants" element={<ApplicantManagementPage />} />
             <Route path="dashboard/recruiter/analytics" element={<RecruiterAnalyticsPage />} />
-            <Route path="dashboard/recruiter/settings" element={<SeekerSettingsPage />} />
+            <Route path="dashboard/recruiter/profile" element={<RecruiterProfilePage />} />
+            <Route path="dashboard/recruiter/settings" element={<RecruiterProfilePage />} />
           </Route>
 
           {/* Admin Dashboard */}
@@ -93,6 +97,9 @@ export function App() {
             <Route path="dashboard/admin/companies" element={<AdminCompaniesPage />} />
             <Route path="dashboard/admin/jobs" element={<AdminJobsPage />} />
             <Route path="dashboard/admin/payments" element={<AdminPaymentsPage />} />
+            <Route path="dashboard/admin/site-content" element={<AdminSiteContentPage />} />
+            <Route path="dashboard/admin/profile" element={<AdminProfilePage />} />
+            <Route path="dashboard/admin/settings" element={<AdminProfilePage />} />
           </Route>
         </Route>
       </Route>

@@ -1,9 +1,23 @@
 import { Link, Outlet } from "react-router-dom";
+import { Twitter, Linkedin, Github, Facebook, Instagram } from "lucide-react";
 import { SiteHeader } from "./SiteHeader";
 import { BrandMark } from "./BrandMark";
+import { useSiteContent } from "@/features/cms/hooks";
 
-/** Shared shell for public pages. */
+/** Shared shell for public pages with dynamic site configuration. */
 export function AppLayout() {
+  const { content } = useSiteContent();
+
+  const currentYear = new Date().getFullYear().toString();
+  const copyright = (content.footer.copyrightText || "© {year} HireLoop Technologies Inc. All rights reserved.")
+    .replace("{year}", currentYear);
+
+  const sortedColumns = (content.footer.columns || [])
+    .slice()
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+  const socials = content.footer.socialLinks || {};
+
   return (
     <div className="flex min-h-dvh flex-col">
       <a
@@ -21,101 +35,111 @@ export function AppLayout() {
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5">
             <div className="col-span-2">
               <Link to="/" className="inline-flex items-center gap-2.5">
-                <BrandMark />
+                <BrandMark
+                  siteName={content.general.siteName}
+                  logoUrl={content.general.logoUrl}
+                />
               </Link>
-              <p className="mt-4 max-w-sm text-sm text-muted-foreground">
-                HireLoop connects ambitious job seekers with world-class employers through verified profiles, transparent job listings, and real-time hiring pipelines.
+              <p className="mt-4 max-w-sm text-sm text-muted-foreground leading-relaxed">
+                {content.footer.description}
               </p>
+
+              {/* Social links */}
+              <div className="mt-5 flex items-center gap-3 text-muted-foreground">
+                {socials.twitter && (
+                  <a
+                    href={socials.twitter}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1.5 rounded-md hover:bg-surface-muted hover:text-foreground transition-colors"
+                    aria-label="Twitter"
+                  >
+                    <Twitter className="h-4 w-4" />
+                  </a>
+                )}
+                {socials.linkedin && (
+                  <a
+                    href={socials.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1.5 rounded-md hover:bg-surface-muted hover:text-foreground transition-colors"
+                    aria-label="LinkedIn"
+                  >
+                    <Linkedin className="h-4 w-4" />
+                  </a>
+                )}
+                {socials.github && (
+                  <a
+                    href={socials.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1.5 rounded-md hover:bg-surface-muted hover:text-foreground transition-colors"
+                    aria-label="GitHub"
+                  >
+                    <Github className="h-4 w-4" />
+                  </a>
+                )}
+                {socials.facebook && (
+                  <a
+                    href={socials.facebook}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1.5 rounded-md hover:bg-surface-muted hover:text-foreground transition-colors"
+                    aria-label="Facebook"
+                  >
+                    <Facebook className="h-4 w-4" />
+                  </a>
+                )}
+                {socials.instagram && (
+                  <a
+                    href={socials.instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1.5 rounded-md hover:bg-surface-muted hover:text-foreground transition-colors"
+                    aria-label="Instagram"
+                  >
+                    <Instagram className="h-4 w-4" />
+                  </a>
+                )}
+              </div>
             </div>
 
-            <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
-                For Job Seekers
-              </h3>
-              <ul className="mt-4 space-y-2.5 text-sm">
-                <li>
-                  <Link to="/jobs" className="text-muted-foreground hover:text-foreground">
-                    Browse All Jobs
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/companies" className="text-muted-foreground hover:text-foreground">
-                    Company Directory
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/pricing" className="text-muted-foreground hover:text-foreground">
-                    Seeker Plans
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/signup" className="text-muted-foreground hover:text-foreground">
-                    Create Profile
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
-                For Employers
-              </h3>
-              <ul className="mt-4 space-y-2.5 text-sm">
-                <li>
-                  <Link to="/pricing" className="text-muted-foreground hover:text-foreground">
-                    Recruiter Pricing
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/dashboard/recruiter/jobs/new" className="text-muted-foreground hover:text-foreground">
-                    Post a Job
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/dashboard/recruiter/company" className="text-muted-foreground hover:text-foreground">
-                    Employer Branding
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/contact" className="text-muted-foreground hover:text-foreground">
-                    Enterprise Sales
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
-                Company & Legal
-              </h3>
-              <ul className="mt-4 space-y-2.5 text-sm">
-                <li>
-                  <Link to="/about" className="text-muted-foreground hover:text-foreground">
-                    About Us
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/contact" className="text-muted-foreground hover:text-foreground">
-                    Contact & Support
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/privacy" className="text-muted-foreground hover:text-foreground">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/terms" className="text-muted-foreground hover:text-foreground">
-                    Terms of Service
-                  </Link>
-                </li>
-              </ul>
-            </div>
+            {/* Dynamic Columns */}
+            {sortedColumns.map((col) => (
+              <div key={col.id || col.title}>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                  {col.title}
+                </h3>
+                <ul className="mt-4 space-y-2.5 text-sm">
+                  {(col.links || []).map((link) => (
+                    <li key={link.id || link.url}>
+                      {link.isExternal ? (
+                        <a
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          {link.label}
+                        </a>
+                      ) : (
+                        <Link
+                          to={link.url}
+                          className="text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          {link.label}
+                        </Link>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
 
           <div className="mt-12 border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-            <p>© {new Date().getFullYear()} HireLoop Technologies Inc. All rights reserved.</p>
-            <p>Empowering global career growth with precision and transparency.</p>
+            <p>{copyright}</p>
+            {content.footer.tagline && <p>{content.footer.tagline}</p>}
           </div>
         </div>
       </footer>

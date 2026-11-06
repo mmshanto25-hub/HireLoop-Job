@@ -215,13 +215,14 @@ export function SeekerSettingsPage() {
             className="rounded-full border-2 border-brand/20 h-20 w-20 text-xl"
           />
           <div>
-            <label className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground shadow-sm hover:bg-surface-muted cursor-pointer transition-colors">
+            <label className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-semibold text-foreground shadow-sm hover:bg-surface-muted cursor-pointer transition-colors disabled:opacity-50">
               <Upload className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-              Upload Avatar
+              {uploadAvatarMutation.isPending ? "Uploading..." : "Upload Avatar"}
               <input
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
                 onChange={handleAvatarChange}
+                disabled={uploadAvatarMutation.isPending}
                 className="sr-only"
               />
             </label>

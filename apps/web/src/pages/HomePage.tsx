@@ -5,9 +5,10 @@ import {
   Briefcase,
   Building2,
   CheckCircle2,
+  ChevronDown,
   Compass,
   FileCheck2,
-  Globe2,
+  HelpCircle,
   LineChart,
   MapPin,
   Search,
@@ -21,15 +22,20 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { JobCard } from "@/components/jobs/JobCard";
 import { useFeaturedJobs, usePublicStats } from "@/features/jobs/hooks";
 import { useCurrentUser } from "@/features/auth/hooks";
+import { useSiteContent } from "@/features/cms/hooks";
 
 export function HomePage() {
   const [keyword, setKeyword] = useState("");
   const [location, setLocation] = useState("");
+  const [openFaqId, setOpenFaqId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const { data: user } = useCurrentUser();
+  const { content } = useSiteContent();
   const { data: stats, isPending: statsLoading } = usePublicStats();
   const { data: featuredJobs, isPending: jobsLoading } = useFeaturedJobs();
+
+  const hp = content.homePage;
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -47,20 +53,21 @@ export function HomePage() {
 
   return (
     <div className="flex flex-col">
-      {/* Hero Section */}
+      {/* Dynamic Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-b from-surface via-surface-muted/50 to-background border-b border-border/60 py-16 sm:py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="text-center max-w-3xl mx-auto">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-3.5 py-1 text-xs font-semibold text-brand-text">
-              <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-              Modern hiring & job search platform
-            </span>
+            {hp.hero.badgeText && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-3.5 py-1 text-xs font-semibold text-brand-text">
+                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+                {hp.hero.badgeText}
+              </span>
+            )}
             <h1 className="mt-4 font-heading text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl text-balance">
-              Find your next career move with <span className="text-brand">HireLoop</span>.
+              {hp.hero.headline} <span className="text-brand">{hp.hero.highlightedWord}</span>
             </h1>
             <p className="mt-5 text-lg text-muted-foreground leading-relaxed">
-              Connect directly with verified companies hiring top engineering, design, and product talent.
-              Real jobs, transparent salaries, and automated matching.
+              {hp.hero.subheadline}
             </p>
           </div>
 
@@ -97,15 +104,18 @@ export function HomePage() {
 
           {/* Action CTAs */}
           <div className="mt-6 flex items-center justify-center gap-4 text-sm">
-            <Link to="/jobs" className="text-muted-foreground hover:text-foreground font-medium underline underline-offset-4">
-              Browse all open positions
+            <Link
+              to={hp.hero.primaryCtaUrl || "/jobs"}
+              className="text-muted-foreground hover:text-foreground font-medium underline underline-offset-4"
+            >
+              {hp.hero.primaryCtaText || "Browse all open positions"}
             </Link>
             <span className="text-border">•</span>
             <Link
-              to={isRecruiter ? "/dashboard/recruiter/jobs/new" : "/signup"}
+              to={isRecruiter ? "/dashboard/recruiter/jobs/new" : (hp.hero.secondaryCtaUrl || "/signup")}
               className="text-brand font-semibold hover:text-brand-hover inline-flex items-center gap-1"
             >
-              Post a job opening
+              {hp.hero.secondaryCtaText || "Post a job opening"}
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           </div>
@@ -113,91 +123,95 @@ export function HomePage() {
       </section>
 
       {/* Live Statistics Section */}
-      <section aria-labelledby="live-stats-heading" className="border-b border-border bg-surface py-10">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <h2 id="live-stats-heading" className="sr-only">Platform Statistics</h2>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-            <div className="flex items-center gap-4 rounded-xl border border-border/80 bg-surface-muted/50 p-6">
-              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-soft text-brand-text">
-                <Briefcase className="h-6 w-6" aria-hidden="true" />
-              </span>
-              <div>
-                <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Active Jobs</p>
-                {statsLoading ? (
-                  <Skeleton className="h-8 w-20 mt-1" />
-                ) : (
-                  <p className="font-heading text-3xl font-bold text-foreground">
-                    {stats?.activeJobs ?? 0}
-                  </p>
-                )}
+      {hp.hero.showLiveCounter && (
+        <section aria-labelledby="live-stats-heading" className="border-b border-border bg-surface py-10">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6">
+            <h2 id="live-stats-heading" className="sr-only">Platform Statistics</h2>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+              <div className="flex items-center gap-4 rounded-xl border border-border/80 bg-surface-muted/50 p-6">
+                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-soft text-brand-text">
+                  <Briefcase className="h-6 w-6" aria-hidden="true" />
+                </span>
+                <div>
+                  <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Active Jobs</p>
+                  {statsLoading ? (
+                    <Skeleton className="h-8 w-20 mt-1" />
+                  ) : (
+                    <p className="font-heading text-3xl font-bold text-foreground">
+                      {stats?.activeJobs ?? 0}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
 
-            <div className="flex items-center gap-4 rounded-xl border border-border/80 bg-surface-muted/50 p-6">
-              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent-soft text-accent">
-                <Building2 className="h-6 w-6" aria-hidden="true" />
-              </span>
-              <div>
-                <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Approved Companies</p>
-                {statsLoading ? (
-                  <Skeleton className="h-8 w-20 mt-1" />
-                ) : (
-                  <p className="font-heading text-3xl font-bold text-foreground">
-                    {stats?.approvedCompanies ?? 0}
-                  </p>
-                )}
+              <div className="flex items-center gap-4 rounded-xl border border-border/80 bg-surface-muted/50 p-6">
+                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent-soft text-accent">
+                  <Building2 className="h-6 w-6" aria-hidden="true" />
+                </span>
+                <div>
+                  <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Approved Companies</p>
+                  {statsLoading ? (
+                    <Skeleton className="h-8 w-20 mt-1" />
+                  ) : (
+                    <p className="font-heading text-3xl font-bold text-foreground">
+                      {stats?.approvedCompanies ?? 0}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
 
-            <div className="flex items-center gap-4 rounded-xl border border-border/80 bg-surface-muted/50 p-6">
-              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-info-soft text-info">
-                <Users2 className="h-6 w-6" aria-hidden="true" />
-              </span>
-              <div>
-                <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Job Seekers</p>
-                {statsLoading ? (
-                  <Skeleton className="h-8 w-20 mt-1" />
-                ) : (
-                  <p className="font-heading text-3xl font-bold text-foreground">
-                    {stats?.registeredSeekers ?? 0}
-                  </p>
-                )}
+              <div className="flex items-center gap-4 rounded-xl border border-border/80 bg-surface-muted/50 p-6">
+                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-info-soft text-info">
+                  <Users2 className="h-6 w-6" aria-hidden="true" />
+                </span>
+                <div>
+                  <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Job Seekers</p>
+                  {statsLoading ? (
+                    <Skeleton className="h-8 w-20 mt-1" />
+                  ) : (
+                    <p className="font-heading text-3xl font-bold text-foreground">
+                      {stats?.registeredSeekers ?? 0}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Browse by Category Section */}
-      <section className="py-14 mx-auto max-w-7xl px-4 sm:px-6 w-full">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
-          <div>
-            <h2 className="font-heading text-2xl font-bold text-foreground sm:text-3xl">
-              Explore by category
-            </h2>
-            <p className="mt-1.5 text-muted-foreground">
-              Discover opportunities across popular industry domains.
-            </p>
+      {hp.featuredCategoriesSection.visible && (
+        <section className="py-14 mx-auto max-w-7xl px-4 sm:px-6 w-full">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+            <div>
+              <h2 className="font-heading text-2xl font-bold text-foreground sm:text-3xl">
+                {hp.featuredCategoriesSection.heading}
+              </h2>
+              <p className="mt-1.5 text-muted-foreground">
+                {hp.featuredCategoriesSection.subheading}
+              </p>
+            </div>
+            <Link to="/jobs" className="text-sm font-semibold text-brand hover:text-brand-hover inline-flex items-center gap-1">
+              Browse all categories
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
           </div>
-          <Link to="/jobs" className="text-sm font-semibold text-brand hover:text-brand-hover inline-flex items-center gap-1">
-            Browse all categories
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
-          </Link>
-        </div>
 
-        <div className="flex flex-wrap gap-2.5">
-          {JOB_CATEGORIES.slice(0, 12).map((category) => (
-            <button
-              key={category}
-              type="button"
-              onClick={() => handleCategoryClick(category)}
-              className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground shadow-sm transition-all hover:border-brand hover:bg-brand-soft hover:text-brand-text active:scale-95"
-            >
-              <span>{category}</span>
-            </button>
-          ))}
-        </div>
-      </section>
+          <div className="flex flex-wrap gap-2.5">
+            {JOB_CATEGORIES.slice(0, 12).map((category) => (
+              <button
+                key={category}
+                type="button"
+                onClick={() => handleCategoryClick(category)}
+                className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground shadow-sm transition-all hover:border-brand hover:bg-brand-soft hover:text-brand-text active:scale-95"
+              >
+                <span>{category}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Featured Jobs Section */}
       <section className="border-t border-border bg-surface-muted/40 py-16">
@@ -255,149 +269,208 @@ export function HomePage() {
       </section>
 
       {/* Platform Features Grid */}
-      <section className="py-20 mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <span className="text-xs uppercase tracking-wider font-semibold text-brand">Why Choose HireLoop</span>
-          <h2 className="mt-2 font-heading text-3xl font-bold text-foreground">
-            Built for modern recruitment excellence
-          </h2>
-          <p className="mt-3 text-muted-foreground">
-            A comprehensive ecosystem designed from the ground up to eliminate friction in hiring.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          <div className="rounded-xl border border-border bg-surface p-6 shadow-card">
-            <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-soft text-brand-text mb-5">
-              <Compass className="h-6 w-6" aria-hidden="true" />
-            </span>
-            <h3 className="font-heading text-lg font-semibold text-foreground">Smart Search</h3>
-            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-              Filter with pinpoint accuracy by location, remote policy, technology stack, and salary requirements.
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-border bg-surface p-6 shadow-card">
-            <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent-soft text-accent mb-5">
-              <LineChart className="h-6 w-6" aria-hidden="true" />
-            </span>
-            <h3 className="font-heading text-lg font-semibold text-foreground">Salary Insights</h3>
-            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-              Transparent compensation bands on listings empower fair negotiations and confident career choices.
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-border bg-surface p-6 shadow-card">
-            <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-info-soft text-info mb-5">
-              <Building2 className="h-6 w-6" aria-hidden="true" />
-            </span>
-            <h3 className="font-heading text-lg font-semibold text-foreground">Verified Companies</h3>
-            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-              Every employer profile undergoes administrative verification before listings can be published.
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-border bg-surface p-6 shadow-card">
-            <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-success-soft text-success mb-5">
-              <FileCheck2 className="h-6 w-6" aria-hidden="true" />
-            </span>
-            <h3 className="font-heading text-lg font-semibold text-foreground">Secure Profiles</h3>
-            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-              Private resume storage with restricted authorized access ensures complete data confidentiality.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* How it Works Section */}
-      <section className="border-t border-border bg-surface-muted/50 py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+      {hp.featuresSection.visible && (
+        <section className="py-20 mx-auto max-w-7xl px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="font-heading text-3xl font-bold text-foreground">
-              How HireLoop works
+            <span className="text-xs uppercase tracking-wider font-semibold text-brand">Why Choose {content.general.siteName}</span>
+            <h2 className="mt-2 font-heading text-3xl font-bold text-foreground">
+              {hp.featuresSection.heading}
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Simple, transparent steps for both talent and hiring managers.
+              {hp.featuresSection.subheading}
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            {/* For Seekers */}
-            <div className="rounded-2xl border border-border bg-surface p-8 shadow-card">
-              <span className="text-xs font-semibold uppercase tracking-wider text-brand">For Job Seekers</span>
-              <h3 className="mt-2 font-heading text-xl font-bold text-foreground">Land your dream role</h3>
-              <ul className="mt-6 space-y-4 text-sm text-muted-foreground">
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" aria-hidden="true" />
-                  <span><strong>Build your profile:</strong> Add your skills, work experience, and upload a verified PDF resume.</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" aria-hidden="true" />
-                  <span><strong>Filter & Save:</strong> Discover opportunities matching your salary and remote preferences.</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" aria-hidden="true" />
-                  <span><strong>Apply with confidence:</strong> Direct delivery to verified hiring teams with instant status updates.</span>
-                </li>
-              </ul>
-              <div className="mt-8">
-                <Link to="/signup">
-                  <Button className="w-full">Create Free Seeker Account</Button>
-                </Link>
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="rounded-xl border border-border bg-surface p-6 shadow-card">
+              <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-soft text-brand-text mb-5">
+                <Compass className="h-6 w-6" aria-hidden="true" />
+              </span>
+              <h3 className="font-heading text-lg font-semibold text-foreground">Smart Search</h3>
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                Filter with pinpoint accuracy by location, remote policy, technology stack, and salary requirements.
+              </p>
             </div>
 
-            {/* For Recruiters */}
-            <div className="rounded-2xl border border-border bg-surface p-8 shadow-card">
-              <span className="text-xs font-semibold uppercase tracking-wider text-accent">For Recruiters</span>
-              <h3 className="mt-2 font-heading text-xl font-bold text-foreground">Hire qualified talent</h3>
-              <ul className="mt-6 space-y-4 text-sm text-muted-foreground">
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-accent shrink-0 mt-0.5" aria-hidden="true" />
-                  <span><strong>Register Company:</strong> Submit your organization details for fast moderation approval.</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-accent shrink-0 mt-0.5" aria-hidden="true" />
-                  <span><strong>Publish Openings:</strong> Post structured job descriptions with required skills and salary terms.</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-accent shrink-0 mt-0.5" aria-hidden="true" />
-                  <span><strong>Review & Track:</strong> Evaluate applicant resumes and manage hiring pipelines seamlessly.</span>
-                </li>
-              </ul>
-              <div className="mt-8">
-                <Link to="/signup">
-                  <Button variant="outline" className="w-full">Register as Recruiter</Button>
-                </Link>
+            <div className="rounded-xl border border-border bg-surface p-6 shadow-card">
+              <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent-soft text-accent mb-5">
+                <LineChart className="h-6 w-6" aria-hidden="true" />
+              </span>
+              <h3 className="font-heading text-lg font-semibold text-foreground">Salary Insights</h3>
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                Transparent compensation bands on listings empower fair negotiations and confident career choices.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-border bg-surface p-6 shadow-card">
+              <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-info-soft text-info mb-5">
+                <Building2 className="h-6 w-6" aria-hidden="true" />
+              </span>
+              <h3 className="font-heading text-lg font-semibold text-foreground">Verified Companies</h3>
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                Every employer profile undergoes administrative verification before listings can be published.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-border bg-surface p-6 shadow-card">
+              <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-success-soft text-success mb-5">
+                <FileCheck2 className="h-6 w-6" aria-hidden="true" />
+              </span>
+              <h3 className="font-heading text-lg font-semibold text-foreground">Secure Profiles</h3>
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                Private resume storage with restricted authorized access ensures complete data confidentiality.
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* How it Works Section */}
+      {hp.howItWorksSection.visible && (
+        <section className="border-t border-border bg-surface-muted/50 py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6">
+            <div className="text-center max-w-2xl mx-auto mb-16">
+              <h2 className="font-heading text-3xl font-bold text-foreground">
+                {hp.howItWorksSection.heading}
+              </h2>
+              <p className="mt-3 text-muted-foreground">
+                {hp.howItWorksSection.subheading}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+              {/* For Seekers */}
+              <div className="rounded-2xl border border-border bg-surface p-8 shadow-card">
+                <span className="text-xs font-semibold uppercase tracking-wider text-brand">For Job Seekers</span>
+                <h3 className="mt-2 font-heading text-xl font-bold text-foreground">Land your dream role</h3>
+                <ul className="mt-6 space-y-4 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" aria-hidden="true" />
+                    <span><strong>Build your profile:</strong> Add your skills, work experience, and upload a verified PDF resume.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" aria-hidden="true" />
+                    <span><strong>Filter & Save:</strong> Discover opportunities matching your salary and remote preferences.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-success shrink-0 mt-0.5" aria-hidden="true" />
+                    <span><strong>Apply with confidence:</strong> Direct delivery to verified hiring teams with instant status updates.</span>
+                  </li>
+                </ul>
+                <div className="mt-8">
+                  <Link to="/signup">
+                    <Button className="w-full">Create Free Seeker Account</Button>
+                  </Link>
+                </div>
+              </div>
+
+              {/* For Recruiters */}
+              <div className="rounded-2xl border border-border bg-surface p-8 shadow-card">
+                <span className="text-xs font-semibold uppercase tracking-wider text-accent">For Recruiters</span>
+                <h3 className="mt-2 font-heading text-xl font-bold text-foreground">Hire qualified talent</h3>
+                <ul className="mt-6 space-y-4 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-accent shrink-0 mt-0.5" aria-hidden="true" />
+                    <span><strong>Register Company:</strong> Submit your organization details for fast moderation approval.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-accent shrink-0 mt-0.5" aria-hidden="true" />
+                    <span><strong>Publish Openings:</strong> Post structured job descriptions with required skills and salary terms.</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-accent shrink-0 mt-0.5" aria-hidden="true" />
+                    <span><strong>Review & Track:</strong> Evaluate applicant resumes and manage hiring pipelines seamlessly.</span>
+                  </li>
+                </ul>
+                <div className="mt-8">
+                  <Link to="/signup">
+                    <Button variant="outline" className="w-full">Register as Recruiter</Button>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
+
+      {/* Dynamic FAQ Section */}
+      {hp.faq.visible && hp.faq.items && hp.faq.items.length > 0 && (
+        <section className="py-20 border-t border-border bg-surface">
+          <div className="mx-auto max-w-4xl px-4 sm:px-6">
+            <div className="text-center max-w-2xl mx-auto mb-14">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold text-brand-text mb-3">
+                <HelpCircle className="h-3.5 w-3.5" /> FAQ
+              </div>
+              <h2 className="font-heading text-3xl font-bold text-foreground">
+                {hp.faq.title}
+              </h2>
+              {hp.faq.subtitle && (
+                <p className="mt-2 text-muted-foreground text-sm sm:text-base">
+                  {hp.faq.subtitle}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-3.5">
+              {hp.faq.items
+                .slice()
+                .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+                .map((item) => {
+                  const isOpen = openFaqId === item.id;
+                  return (
+                    <div
+                      key={item.id}
+                      className="rounded-xl border border-border bg-surface-muted/40 transition-colors overflow-hidden"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setOpenFaqId(isOpen ? null : item.id)}
+                        className="w-full py-4 px-5 text-left font-semibold text-foreground flex items-center justify-between gap-4 hover:bg-surface-muted/80 transition-colors"
+                        aria-expanded={isOpen}
+                      >
+                        <span className="text-sm sm:text-base">{item.question}</span>
+                        <ChevronDown
+                          className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-180 text-brand" : ""}`}
+                        />
+                      </button>
+                      {isOpen && (
+                        <div className="px-5 pb-5 text-sm text-muted-foreground leading-relaxed border-t border-border/50 pt-3">
+                          {item.answer}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Final CTA Banner */}
-      <section className="bg-brand text-brand-foreground py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 text-center">
-          <h2 className="font-heading text-3xl font-bold sm:text-4xl text-balance">
-            Ready to accelerate your hiring or job search?
-          </h2>
-          <p className="mt-4 text-brand-foreground/80 max-w-xl mx-auto text-base">
-            Join thousands of professionals already discovering new career horizons on HireLoop today.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Link to="/signup">
-              <Button size="lg" className="bg-surface text-foreground hover:bg-surface-muted font-bold">
-                Get Started Free
-              </Button>
-            </Link>
-            <Link to="/jobs">
-              <Button size="lg" variant="outline" className="border-brand-foreground/30 text-brand-foreground hover:bg-brand-hover">
-                Explore Jobs
-              </Button>
-            </Link>
+      {hp.ctaBanner.visible && (
+        <section className="bg-brand text-brand-foreground py-16">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 text-center">
+            <h2 className="font-heading text-3xl font-bold sm:text-4xl text-balance">
+              {hp.ctaBanner.title}
+            </h2>
+            <p className="mt-4 text-brand-foreground/80 max-w-xl mx-auto text-base">
+              {hp.ctaBanner.description}
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-4">
+              <Link to={hp.ctaBanner.buttonUrl || "/signup"}>
+                <Button size="lg" className="bg-surface text-foreground hover:bg-surface-muted font-bold">
+                  {hp.ctaBanner.buttonText || "Get Started Free"}
+                </Button>
+              </Link>
+              <Link to="/jobs">
+                <Button size="lg" variant="outline" className="border-brand-foreground/30 text-brand-foreground hover:bg-brand-hover">
+                  Explore Jobs
+                </Button>
+              </Link>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
     </div>
   );
 }

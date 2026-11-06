@@ -17,6 +17,8 @@ import {
   X,
   Home,
   PlusCircle,
+  Sliders,
+  UserCircle,
 } from "lucide-react";
 import { useCurrentUser, useLogout } from "@/features/auth/hooks";
 import { BrandMark } from "./BrandMark";
@@ -39,12 +41,18 @@ export function DashboardLayout() {
 
   const primaryRole = isAdmin ? "admin" : isRecruiter ? "recruiter" : "seeker";
 
+  const profilePath = isAdmin
+    ? "/dashboard/admin/profile"
+    : isRecruiter
+    ? "/dashboard/recruiter/profile"
+    : "/dashboard/seeker/settings";
+
   const seekerLinks = [
     { to: "/dashboard/seeker", label: "Overview", icon: LayoutDashboard, end: true },
     { to: "/dashboard/seeker/applications", label: "Applications", icon: FileCheck2 },
     { to: "/dashboard/seeker/saved", label: "Saved Jobs", icon: Bookmark },
     { to: "/jobs", label: "Browse Jobs", icon: Briefcase },
-    { to: "/dashboard/seeker/settings", label: "Profile & Resume", icon: Settings },
+    { to: "/dashboard/seeker/settings", label: "Profile & Resume", icon: UserCircle },
   ];
 
   const recruiterLinks = [
@@ -53,7 +61,7 @@ export function DashboardLayout() {
     { to: "/dashboard/recruiter/jobs/new", label: "Post a Job", icon: PlusCircle },
     { to: "/dashboard/recruiter/company", label: "Company Profile", icon: Building2 },
     { to: "/dashboard/recruiter/analytics", label: "Analytics", icon: BarChart3 },
-    { to: "/dashboard/recruiter/settings", label: "Settings", icon: Settings },
+    { to: "/dashboard/recruiter/profile", label: "My Profile", icon: UserCircle },
   ];
 
   const adminLinks = [
@@ -62,6 +70,8 @@ export function DashboardLayout() {
     { to: "/dashboard/admin/companies", label: "Companies", icon: Building2 },
     { to: "/dashboard/admin/jobs", label: "Job Moderation", icon: Briefcase },
     { to: "/dashboard/admin/payments", label: "Payments", icon: CreditCard },
+    { to: "/dashboard/admin/site-content", label: "Site Content", icon: Sliders },
+    { to: "/dashboard/admin/profile", label: "Admin Profile", icon: UserCircle },
   ];
 
   const currentNavLinks = isAdmin ? adminLinks : isRecruiter ? recruiterLinks : seekerLinks;
@@ -97,11 +107,17 @@ export function DashboardLayout() {
 
         {/* User Card */}
         <div className="p-4 border-b border-border">
-          <div className="flex items-center gap-3">
-            <Avatar name={user?.fullName || "User"} size="md" />
+          <Link
+            to={profilePath}
+            className="flex items-center gap-3 rounded-lg p-1 -m-1 hover:bg-surface-muted transition-colors group"
+            title="Edit Profile"
+          >
+            <Avatar name={user?.fullName || "User"} src={user?.avatarUrl} size="md" />
             {!isCollapsed && (
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-foreground">{user?.fullName}</p>
+                <p className="truncate text-sm font-semibold text-foreground group-hover:text-brand transition-colors">
+                  {user?.fullName}
+                </p>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <Badge tone={isAdmin ? "danger" : isRecruiter ? "info" : "success"} size="sm">
                     {primaryRole}
@@ -109,7 +125,7 @@ export function DashboardLayout() {
                 </div>
               </div>
             )}
-          </div>
+          </Link>
         </div>
 
         {/* Navigation list */}
@@ -196,15 +212,19 @@ export function DashboardLayout() {
               </button>
             </div>
 
-            <div className="py-4 border-b border-border flex items-center gap-3">
-              <Avatar name={user?.fullName || "User"} size="md" />
+            <Link
+              to={profilePath}
+              onClick={() => setMobileDrawerOpen(false)}
+              className="py-4 border-b border-border flex items-center gap-3 hover:opacity-80 transition-opacity"
+            >
+              <Avatar name={user?.fullName || "User"} src={user?.avatarUrl} size="md" />
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-foreground">{user?.fullName}</p>
                 <Badge tone={isAdmin ? "danger" : isRecruiter ? "info" : "success"} size="sm">
                   {primaryRole}
                 </Badge>
               </div>
-            </div>
+            </Link>
 
             <nav className="flex-1 overflow-y-auto py-4 space-y-1">
               {currentNavLinks.map((item) => {
@@ -281,6 +301,13 @@ export function DashboardLayout() {
               className="text-xs font-medium text-muted-foreground hover:text-foreground hidden sm:block"
             >
               View Site
+            </Link>
+            <Link
+              to={profilePath}
+              className="flex items-center rounded-full p-0.5 hover:ring-2 hover:ring-brand/40 transition-all"
+              title="My Profile"
+            >
+              <Avatar name={user?.fullName || "User"} src={user?.avatarUrl} size="sm" />
             </Link>
           </div>
         </header>

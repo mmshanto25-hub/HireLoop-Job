@@ -39,3 +39,8 @@ export {
   type NotificationAttributes,
   type NotificationDocument,
 } from "./Notification.js";
+export {
+  SiteContentModel,
+  type SiteContentAttributes,
+  type SiteContentDocument,
+} from "./SiteContent.js";

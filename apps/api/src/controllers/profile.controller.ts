@@ -21,26 +21,27 @@ export function createProfileController() {
       if (!req.auth) throw AppError.unauthenticated();
       const { roles } = req.auth.user;
 
-      if (req.body.fullName) {
+      let updatedFullName: string | undefined;
+      if (req.body?.fullName) {
         const parsedName = updateNameSchema.parse({ fullName: req.body.fullName });
-        await profileService.updateFullName(req.auth.userId, parsedName.fullName);
+        updatedFullName = await profileService.updateFullName(req.auth.userId, parsedName.fullName);
       }
 
       if (roles.includes("seeker")) {
         const parsed = updateSeekerProfileSchema.parse(req.body);
         const updated = await profileService.updateSeekerProfile(req.auth.userId, parsed);
-        sendSuccess(res, { seekerProfile: updated });
+        sendSuccess(res, { fullName: updatedFullName, seekerProfile: updated, message: "Profile updated successfully" });
         return;
       }
 
       if (roles.includes("recruiter")) {
         const parsed = updateRecruiterProfileSchema.parse(req.body);
         const updated = await profileService.updateRecruiterProfile(req.auth.userId, parsed);
-        sendSuccess(res, { recruiterProfile: updated });
+        sendSuccess(res, { fullName: updatedFullName, recruiterProfile: updated, message: "Profile updated successfully" });
         return;
       }
 
-      sendSuccess(res, { message: "Profile updated" });
+      sendSuccess(res, { fullName: updatedFullName, message: "Profile updated successfully" });
     }),
 
     uploadAvatar: asyncHandler(async (req: Request, res: Response) => {

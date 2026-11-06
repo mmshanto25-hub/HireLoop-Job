@@ -27,7 +27,11 @@ const baseJobFields = z.object({
   city: z.string().trim().max(100).optional().nullable(),
   country: z.string().trim().max(100).optional().nullable(),
   isRemote: z.boolean().default(false),
-  deadline: z.string().datetime({ offset: true }).optional().nullable(),
+  deadline: z.preprocess((val) => {
+    if (!val || (typeof val === "string" && val.trim() === "")) return undefined;
+    const date = new Date(val as string | number | Date);
+    return isNaN(date.getTime()) ? val : date.toISOString();
+  }, z.string().datetime().optional().nullable()),
   description: z
     .string({ error: "Description is required" })
     .trim()

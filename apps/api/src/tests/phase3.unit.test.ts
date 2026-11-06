@@ -153,6 +153,38 @@ describe("Phase 3: Job Schemas", () => {
     expect(createJobSchema.safeParse(negativeSalary).success).toBe(false);
   });
 
+  it("handles application deadline: empty string becomes undefined, browser date converts to ISO", () => {
+    const baseJob = {
+      title: "Fullstack Engineer",
+      category: "Engineering",
+      skills: ["TypeScript", "Node.js"],
+      jobType: "full-time",
+      description: "Build exceptional products for thousands of global customers worldwide.",
+    };
+
+    // Empty string
+    const emptyRes = createJobSchema.safeParse({ ...baseJob, deadline: "" });
+    expect(emptyRes.success).toBe(true);
+    if (emptyRes.success) {
+      expect(emptyRes.data.deadline).toBeUndefined();
+    }
+
+    // Null or undefined
+    const nullRes = createJobSchema.safeParse({ ...baseJob, deadline: null });
+    expect(nullRes.success).toBe(true);
+
+    // Browser date input: "2027-01-07"
+    const browserDateRes = createJobSchema.safeParse({ ...baseJob, deadline: "2027-01-07" });
+    expect(browserDateRes.success).toBe(true);
+    if (browserDateRes.success) {
+      expect(browserDateRes.data.deadline).toBe(new Date("2027-01-07").toISOString());
+    }
+
+    // Invalid date string
+    const invalidDateRes = createJobSchema.safeParse({ ...baseJob, deadline: "invalid-date" });
+    expect(invalidDateRes.success).toBe(false);
+  });
+
   it("parses and coerces jobSearchSchema query params with defaults", () => {
     const parsed = jobSearchSchema.parse({
       q: "react",

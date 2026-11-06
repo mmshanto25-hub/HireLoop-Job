@@ -28,11 +28,12 @@ const UNSAFE_METHODS = new Set(["POST", "PATCH", "PUT", "DELETE"]);
 /** Auth endpoints never trigger the refresh-and-retry path, which would loop. */
 const NO_REFRESH_PREFIXES = ["/auth/login", "/auth/refresh", "/auth/logout", "/auth/register"];
 
-/** Reads the readable CSRF cookie set by the API. Returns "" when it is absent. */
+/** Reads the readable CSRF cookie set by the API, or sessionStorage for cross-domain calls. Returns "" when it is absent. */
 export function readCsrfToken(): string {
   if (typeof document === "undefined") return "";
   const match = document.cookie.match(/(?:^|;\s*)hl_csrf=([^;]+)/);
-  return match?.[1] ? decodeURIComponent(match[1]) : "";
+  if (match?.[1]) return decodeURIComponent(match[1]);
+  return typeof sessionStorage !== "undefined" ? (sessionStorage.getItem("hl_csrf") ?? "") : "";
 }
 
 let refreshInFlight: Promise<boolean> | null = null;
@@ -66,6 +67,10 @@ async function rawRequest(path: string, options: RequestOptions) {
       body: body !== undefined ? JSON.stringify(body) : undefined,
       signal,
     });
+    const incomingCsrf = response.headers.get("x-csrf-token") || response.headers.get("X-CSRF-Token");
+    if (incomingCsrf && typeof sessionStorage !== "undefined") {
+      sessionStorage.setItem("hl_csrf", incomingCsrf);
+    }
   } catch (err) {
     if (err instanceof DOMException && err.name === "AbortError") throw err;
     throw new ApiClientError(0, "NETWORK_ERROR", "Network request failed. Check your connection.");

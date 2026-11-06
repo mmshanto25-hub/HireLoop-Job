@@ -25,6 +25,11 @@ export class ResendEmailSender implements EmailSender {
   ) {}
 
   async send(message: EmailMessage): Promise<void> {
+    const effectiveFrom =
+      !this.from || this.from.includes("localhost") || !this.from.includes("@")
+        ? "HireLoop <onboarding@resend.dev>"
+        : this.from;
+
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -32,7 +37,7 @@ export class ResendEmailSender implements EmailSender {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: this.from,
+        from: effectiveFrom,
         to: [message.to],
         subject: message.subject,
         html: message.html,
@@ -42,12 +47,12 @@ export class ResendEmailSender implements EmailSender {
     });
 
     if (!response.ok) {
-      // Log only the status. The response body may echo recipient details.
+      const errText = await response.text().catch(() => "");
       this.logger.error(
-        { status: response.status, subject: message.subject },
+        { status: response.status, subject: message.subject, error: errText },
         "Email provider rejected a message",
       );
-      throw new Error(`Email provider responded with HTTP ${response.status}`);
+      throw new Error(`Email provider responded with HTTP ${response.status}: ${errText}`);
     }
     this.logger.info({ subject: message.subject }, "Email accepted by provider");
   }

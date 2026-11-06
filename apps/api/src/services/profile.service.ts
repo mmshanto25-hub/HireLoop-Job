@@ -19,6 +19,7 @@ import {
   getPrivateResumeStream,
   deletePrivateResume,
 } from "./storage.service.js";
+import { saveUserAvatar, saveUserResume } from "./cloudinary.service.js";
 
 export async function getProfile(userId: string, roles: UserRole[]): Promise<ProfileResponse> {
   const user = await UserModel.findById(userId);
@@ -262,13 +263,17 @@ export async function updateAvatar(
   userId: string,
   file: Express.Multer.File,
 ): Promise<string> {
-  const stored = await storePublicImage(file.buffer, file.originalname, file.mimetype);
-  const user = await UserModel.findByIdAndUpdate(
-    userId,
-    { $set: { avatarUrl: stored.url } },
-    { new: true },
-  );
-  if (!user) throw AppError.unauthenticated();
+  const filePath = (file as any).path || (file as any).secure_url;
+  let avatarUrl: string;
+
+  if (filePath) {
+    avatarUrl = await saveUserAvatar(userId, filePath);
+  } else if (file.buffer) {
+    const stored = await storePublicImage(file.buffer, file.originalname, file.mimetype);
+    avatarUrl = await saveUserAvatar(userId, stored.url);
+  } else {
+    throw AppError.badRequest("Invalid avatar image uploaded");
+  }
 
   // Recalculate seeker completeness if exists
   const seeker = await SeekerProfileModel.findOne({ userId });
@@ -277,26 +282,39 @@ export async function updateAvatar(
     await seeker.save();
   }
 
-  return stored.url;
+  return avatarUrl;
 }
 
 export async function uploadResume(
   userId: string,
   file: Express.Multer.File,
 ): Promise<{ resumeObjectKey: string; resumeFileName: string; profileCompleteness: number }> {
-  const stored = await storePrivateResume(file.buffer, file.originalname, file.mimetype);
+  const filePath = (file as any).path || (file as any).secure_url;
+  let resumeUrl: string;
+  let resumeObjectKey: string;
+
+  if (filePath) {
+    resumeUrl = await saveUserResume(userId, filePath, file.originalname);
+    resumeObjectKey = filePath;
+  } else if (file.buffer) {
+    const stored = await storePrivateResume(file.buffer, file.originalname, file.mimetype);
+    resumeUrl = await saveUserResume(userId, stored.objectKey, file.originalname);
+    resumeObjectKey = stored.objectKey;
+  } else {
+    throw AppError.badRequest("Invalid resume file uploaded");
+  }
 
   let profile = await SeekerProfileModel.findOne({ userId });
   if (!profile) {
     profile = new SeekerProfileModel({ userId });
   }
 
-  // Delete old resume if present
-  if (profile.resumeObjectKey) {
+  // Delete old resume if present and local
+  if (profile.resumeObjectKey && profile.resumeObjectKey !== resumeObjectKey) {
     await deletePrivateResume(profile.resumeObjectKey);
   }
 
-  profile.resumeObjectKey = stored.objectKey;
+  profile.resumeObjectKey = resumeObjectKey;
   profile.resumeFileName = file.originalname;
 
   const user = await UserModel.findById(userId);
@@ -308,7 +326,7 @@ export async function uploadResume(
   await profile.save();
 
   return {
-    resumeObjectKey: stored.objectKey,
+    resumeObjectKey,
     resumeFileName: file.originalname,
     profileCompleteness: profile.profileCompleteness,
   };

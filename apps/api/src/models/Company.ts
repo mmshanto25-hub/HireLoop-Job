@@ -18,6 +18,7 @@ const companySchema = new Schema(
     location: { type: String, required: true, trim: true, maxlength: 150 },
     employeeRange: { type: String, required: true, maxlength: 20 },
     logoObjectKey: { type: String, default: null },
+    logoUrl: { type: String, default: null },
     description: { type: String, required: true, trim: true, maxlength: 5000 },
     status: { type: String, enum: COMPANY_STATUSES, default: "pending", required: true },
     rejectionReason: { type: String, default: null, maxlength: 500 },

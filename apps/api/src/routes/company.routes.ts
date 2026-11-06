@@ -2,7 +2,7 @@ import { Router } from "express";
 import type { Env } from "../config/env.js";
 import { createCompanyController } from "../controllers/company.controller.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
-import { logoUpload } from "../middleware/upload.js";
+import { cloudinaryLogoUpload } from "../middleware/cloudinaryUpload.js";
 
 export function createCompanyRouter(deps: { env: Env }): Router {
   const router = Router();
@@ -16,7 +16,7 @@ export function createCompanyRouter(deps: { env: Env }): Router {
     "/:companyId/logo",
     requireAuth(deps.env),
     requireRole("recruiter", "admin"),
-    logoUpload,
+    cloudinaryLogoUpload,
     c.uploadLogo,
   );
 

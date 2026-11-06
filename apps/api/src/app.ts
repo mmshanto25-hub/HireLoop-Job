@@ -16,6 +16,7 @@ import { createSavedJobRouter } from "./routes/saved-job.routes.js";
 import { createNotificationRouter } from "./routes/notification.routes.js";
 import { createDashboardRouter } from "./routes/dashboard.routes.js";
 import { createUploadRouter } from "./routes/upload.routes.js";
+import { createCloudinaryUploadRouter } from "./routes/cloudinaryUpload.routes.js";
 import { createCmsPublicRouter, createCmsAdminRouter } from "./routes/cms.routes.js";
 import { createLogger, type Logger } from "./utils/logger.js";
 import { requestId } from "./middleware/requestId.js";
@@ -114,6 +115,8 @@ export function createApp({ env, logger, email }: AppDependencies): Express {
   app.use(`${API_PREFIX}/dashboard`, createDashboardRouter({ env }));
   app.use(`${API_PREFIX}/content`, createCmsPublicRouter());
   app.use(`${API_PREFIX}/admin/content`, createCmsAdminRouter({ env }));
+  app.use(`${API_PREFIX}/upload`, createCloudinaryUploadRouter({ env }));
+  app.use(`${API_PREFIX}/uploads`, createCloudinaryUploadRouter({ env }));
   app.use(`${API_PREFIX}/uploads`, createUploadRouter());
 
   app.use(notFoundHandler);

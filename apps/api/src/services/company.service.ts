@@ -10,6 +10,7 @@ import { Types } from "mongoose";
 import { CompanyModel, JobModel, UserModel, type CompanyDocument } from "../models/index.js";
 import { AppError } from "../utils/AppError.js";
 import { storePublicImage } from "./storage.service.js";
+import { saveCompanyLogo } from "./cloudinary.service.js";
 
 function slugify(text: string): string {
   return text
@@ -45,7 +46,7 @@ function toCompanyData(company: CompanyDocument): CompanyData {
     website: company.website ?? null,
     location: company.location,
     employeeRange: company.employeeRange,
-    logoUrl: company.logoObjectKey ? `/api/v1/uploads/public/${company.logoObjectKey}` : null,
+    logoUrl: company.logoUrl || (company.logoObjectKey ? `/api/v1/uploads/public/${company.logoObjectKey}` : null),
     description: company.description,
     status: company.status,
     rejectionReason: company.rejectionReason ?? null,
@@ -129,11 +130,25 @@ export async function uploadCompanyLogo(
   const company = await CompanyModel.findOne(query);
   if (!company) throw AppError.notFound("Company not found or unauthorized");
 
-  const stored = await storePublicImage(file.buffer, file.originalname, file.mimetype);
-  company.logoObjectKey = stored.objectKey;
-  await company.save();
+  const filePath = (file as any).path || (file as any).secure_url;
+  let finalUrl: string;
 
-  return stored.url;
+  if (filePath) {
+    const result = await saveCompanyLogo(String(company._id), filePath);
+    finalUrl = result.logoUrl;
+    company.logoObjectKey = filePath;
+    company.logoUrl = filePath;
+  } else if (file.buffer) {
+    const stored = await storePublicImage(file.buffer, file.originalname, file.mimetype);
+    company.logoObjectKey = stored.objectKey;
+    company.logoUrl = stored.url;
+    finalUrl = stored.url;
+  } else {
+    throw AppError.badRequest("Invalid logo image uploaded");
+  }
+
+  await company.save();
+  return finalUrl;
 }
 
 export async function getCompanyBySlug(
@@ -206,7 +221,7 @@ export async function listApprovedCompanies(options: {
     industry: c.industry,
     location: c.location,
     employeeRange: c.employeeRange,
-    logoUrl: c.logoObjectKey ? `/api/v1/uploads/public/${c.logoObjectKey}` : null,
+    logoUrl: c.logoUrl || (c.logoObjectKey ? `/api/v1/uploads/public/${c.logoObjectKey}` : null),
     description: c.description,
     openJobCount: countMap.get(String(c._id)) ?? 0,
   }));

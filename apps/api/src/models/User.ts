@@ -25,6 +25,7 @@ const userSchema = new Schema(
     /** Never returned by default. Only selected explicitly when verifying a password. */
     passwordHash: { type: String, select: false, default: null },
     avatarUrl: { type: String, default: null },
+    resumeUrl: { type: String, default: null },
     emailVerifiedAt: { type: Date, default: null },
     status: { type: String, enum: USER_STATUSES, default: "active", required: true },
     authProviders: { type: [authProviderSchema], default: [] },

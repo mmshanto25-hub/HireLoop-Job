@@ -53,15 +53,24 @@ export function AdminCompaniesPage() {
     setPage(1);
   };
 
-  const handleConfirmReview = async () => {
-    if (!reviewModalData) return;
-    await reviewMutation.mutateAsync({
-      companyId: reviewModalData.company.id,
-      status: reviewModalData.action,
-      rejectionReason: reviewModalData.action === "rejected" ? rejectionReason : undefined,
-    });
+  const handleCloseModal = () => {
     setReviewModalData(null);
     setRejectionReason("");
+    reviewMutation.reset();
+  };
+
+  const handleConfirmReview = async () => {
+    if (!reviewModalData) return;
+    try {
+      await reviewMutation.mutateAsync({
+        companyId: reviewModalData.company.id,
+        status: reviewModalData.action,
+        rejectionReason: reviewModalData.action === "rejected" ? rejectionReason : undefined,
+      });
+      handleCloseModal();
+    } catch {
+      // Keep modal open to display reviewMutation.error
+    }
   };
 
   const getCompanyTone = (st: string): BadgeTone => {
@@ -268,7 +277,7 @@ export function AdminCompaniesPage() {
       {reviewModalData && (
         <Modal
           open={true}
-          onOpenChange={(open) => !open && setReviewModalData(null)}
+          onOpenChange={(open) => !open && handleCloseModal()}
           title={`${reviewModalData.action === "approved" ? "Approve" : "Reject"} Organization — ${reviewModalData.company.name}`}
         >
           <div className="space-y-4 pt-2">
@@ -277,6 +286,14 @@ export function AdminCompaniesPage() {
                 ? "Approving this company makes its profile visible to the public and allows the recruiter to publish active job listings."
                 : "Rejecting this company will hide its profile from public search and close any currently active job listings published by this company."}
             </p>
+
+            {reviewMutation.isError && (
+              <div className="rounded-lg bg-danger/10 border border-danger/20 p-2.5 text-xs text-danger">
+                {reviewMutation.error instanceof Error
+                  ? reviewMutation.error.message
+                  : "Failed to update company status. Please try again."}
+              </div>
+            )}
 
             {reviewModalData.action === "rejected" && (
               <div className="space-y-1.5 pt-2">
@@ -294,7 +311,7 @@ export function AdminCompaniesPage() {
             )}
 
             <div className="flex justify-end gap-3 pt-4 border-t border-border">
-              <Button variant="outline" size="sm" onClick={() => setReviewModalData(null)}>
+              <Button variant="outline" size="sm" onClick={handleCloseModal}>
                 Cancel
               </Button>
               <Button
@@ -303,7 +320,11 @@ export function AdminCompaniesPage() {
                 onClick={handleConfirmReview}
                 disabled={reviewMutation.isPending}
               >
-                {reviewModalData.action === "approved" ? "Confirm Approval" : "Confirm Rejection"}
+                {reviewMutation.isPending
+                  ? "Processing..."
+                  : reviewModalData.action === "approved"
+                    ? "Confirm Approval"
+                    : "Confirm Rejection"}
               </Button>
             </div>
           </div>

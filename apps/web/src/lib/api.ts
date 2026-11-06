@@ -64,7 +64,7 @@ async function rawRequest(path: string, options: RequestOptions) {
       method,
       credentials: "include",
       headers,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: body !== undefined ? (typeof body === "string" ? body : JSON.stringify(body)) : undefined,
       signal,
     });
     const incomingCsrf = response.headers.get("x-csrf-token") || response.headers.get("X-CSRF-Token");

@@ -6,6 +6,7 @@ import type {
   CompanyListItem,
   CompanyDetail,
 } from "@hireloop/shared";
+import { Types } from "mongoose";
 import { CompanyModel, JobModel, UserModel, type CompanyDocument } from "../models/index.js";
 import { AppError } from "../utils/AppError.js";
 import { storePublicImage } from "./storage.service.js";
@@ -247,12 +248,15 @@ export async function reviewCompany(
   companyId: string,
   input: ReviewCompanyInput,
 ): Promise<CompanyData> {
+  if (!Types.ObjectId.isValid(companyId)) throw AppError.notFound("Company not found");
   const company = await CompanyModel.findById(companyId);
   if (!company) throw AppError.notFound("Company not found");
 
   company.status = input.status;
   company.reviewedAt = new Date();
-  company.reviewedBy = adminId as unknown as CompanyDocument["reviewedBy"];
+  company.reviewedBy = Types.ObjectId.isValid(adminId)
+    ? (new Types.ObjectId(adminId) as unknown as CompanyDocument["reviewedBy"])
+    : null;
   company.rejectionReason = input.status === "rejected" ? input.rejectionReason ?? null : null;
 
   // If rejected, close any active jobs published by this company

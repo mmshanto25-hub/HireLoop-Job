@@ -26,13 +26,13 @@ export const adminApi = {
   updateUserStatus: (id: string, status: string) =>
     apiRequest<{ id: string; status: string }>(`/admin/users/${id}/status`, {
       method: "PATCH",
-      body: JSON.stringify({ status }),
+      body: { status },
     }),
 
   updateUserRoles: (id: string, roles: string[]) =>
     apiRequest<{ id: string; roles: string[] }>(`/admin/users/${id}/roles`, {
       method: "PUT",
-      body: JSON.stringify({ roles }),
+      body: { roles },
     }),
 
   getCompanies: (params?: { q?: string; status?: string; page?: number; limit?: number }) => {
@@ -50,7 +50,7 @@ export const adminApi = {
   reviewCompany: (companyId: string, status: "approved" | "rejected", rejectionReason?: string) =>
     apiRequest<CompanyData>(`/admin/companies/${companyId}/review`, {
       method: "POST",
-      body: JSON.stringify({ status, rejectionReason }),
+      body: { status, rejectionReason },
     }),
 
   getJobs: (params?: { q?: string; category?: string; status?: string; page?: number; limit?: number }) => {

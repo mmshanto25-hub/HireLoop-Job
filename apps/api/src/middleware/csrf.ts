@@ -57,10 +57,13 @@ export function csrfProtection(env: Pick<Env, "WEB_URL" | "API_URL">) {
     const headerToken = req.get("x-csrf-token");
 
     // For trusted cross-site origins (e.g. Vercel frontend calling Render backend),
-    // document.cookie cannot read cross-domain cookies. If origin is verified, allow.
-    if (isTrustedOrigin && !headerToken) {
-      next();
-      return;
+    // allow if origin is verified and either CSRF cookie/header is omitted due to cross-site restrictions
+    // or the header matches the cookie token.
+    if (isTrustedOrigin) {
+      if (!cookieToken || !headerToken || safeEqual(cookieToken, headerToken)) {
+        next();
+        return;
+      }
     }
 
     if (

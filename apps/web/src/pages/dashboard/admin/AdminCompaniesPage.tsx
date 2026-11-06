@@ -36,6 +36,15 @@ export function AdminCompaniesPage() {
     limit: 15,
   });
 
+  const companiesList: CompanyData[] = Array.isArray(data)
+    ? (data as unknown as CompanyData[])
+    : data?.companies ?? [];
+  const totalCount = Array.isArray(data)
+    ? (data as unknown as CompanyData[]).length
+    : data?.total ?? 0;
+  const currentPage = Array.isArray(data) ? 1 : data?.page ?? 1;
+  const pageLimit = Array.isArray(data) ? 15 : data?.limit ?? 15;
+
   const reviewMutation = useReviewCompany();
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -128,7 +137,7 @@ export function AdminCompaniesPage() {
           <div className="p-8 text-center text-danger">
             Failed to load companies list. Please try again.
           </div>
-        ) : data.companies.length === 0 ? (
+        ) : companiesList.length === 0 ? (
           <div className="p-12 text-center text-muted-foreground">
             No companies found matching the specified criteria.
           </div>
@@ -146,7 +155,7 @@ export function AdminCompaniesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {data.companies.map((c) => (
+                {companiesList.map((c) => (
                   <tr key={c.id} className="hover:bg-surface-muted/40 transition-colors">
                     <td className="py-3 px-4">
                       <div className="font-semibold text-foreground flex items-center gap-2">
@@ -228,10 +237,10 @@ export function AdminCompaniesPage() {
         )}
 
         {/* Pagination Footer */}
-        {data && data.total > 0 && (
+        {totalCount > 0 && (
           <div className="p-4 border-t border-border flex items-center justify-between">
             <span className="text-xs text-muted-foreground">
-              Showing page {data.page} of {Math.ceil(data.total / data.limit)} ({data.total} companies)
+              Showing page {currentPage} of {Math.ceil(totalCount / pageLimit) || 1} ({totalCount} companies)
             </span>
             <div className="flex items-center gap-2">
               <Button
@@ -245,7 +254,7 @@ export function AdminCompaniesPage() {
               <Button
                 variant="outline"
                 size="sm"
-                disabled={page >= Math.ceil(data.total / data.limit)}
+                disabled={page >= (Math.ceil(totalCount / pageLimit) || 1)}
                 onClick={() => setPage(page + 1)}
               >
                 Next

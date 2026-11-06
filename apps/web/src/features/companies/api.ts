@@ -15,7 +15,9 @@ export const companiesApi = {
     if (params.page) searchParams.set("page", String(params.page));
     if (params.limit) searchParams.set("limit", String(params.limit));
     const query = searchParams.toString();
-    return apiRequest<CompanyListItem[]>(`/companies${query ? `?${query}` : ""}`);
+    return apiRequest<{ companies: CompanyListItem[]; total: number; page: number; limit: number }>(
+      `/companies${query ? `?${query}` : ""}`,
+    );
   },
 
   getBySlug: (slug: string) => apiRequest<CompanyDetail>(`/companies/${slug}`),

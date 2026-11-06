@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
-import { INDUSTRIES } from "@hireloop/shared";
+import { INDUSTRIES, type CompanyListItem } from "@hireloop/shared";
 import { Input, Select } from "@/components/ui/Input";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -12,10 +12,14 @@ export function CompaniesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [industry, setIndustry] = useState("");
 
-  const { data: companies, isPending, isError, error, refetch } = useApprovedCompanies({
+  const { data, isPending, isError, error, refetch } = useApprovedCompanies({
     q: searchTerm || undefined,
     industry: industry || undefined,
   });
+
+  const companies: CompanyListItem[] = Array.isArray(data)
+    ? (data as unknown as CompanyListItem[])
+    : (data?.companies ?? []);
 
   return (
     <div className="min-h-screen bg-background pb-20">

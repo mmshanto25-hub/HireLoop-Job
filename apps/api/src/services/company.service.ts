@@ -48,11 +48,15 @@ function toCompanyData(company: CompanyDocument): CompanyData {
     description: company.description,
     status: company.status,
     rejectionReason: company.rejectionReason ?? null,
-    submittedAt: company.submittedAt.toISOString(),
-    reviewedAt: company.reviewedAt ? company.reviewedAt.toISOString() : null,
+    submittedAt: company.submittedAt
+      ? new Date(company.submittedAt).toISOString()
+      : company.createdAt
+        ? new Date(company.createdAt).toISOString()
+        : new Date().toISOString(),
+    reviewedAt: company.reviewedAt ? new Date(company.reviewedAt).toISOString() : null,
     reviewedBy: company.reviewedBy ? String(company.reviewedBy) : null,
-    createdAt: company.createdAt.toISOString(),
-    updatedAt: company.updatedAt.toISOString(),
+    createdAt: company.createdAt ? new Date(company.createdAt).toISOString() : new Date().toISOString(),
+    updatedAt: company.updatedAt ? new Date(company.updatedAt).toISOString() : new Date().toISOString(),
   };
 }
 

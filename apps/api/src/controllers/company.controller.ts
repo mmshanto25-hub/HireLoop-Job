@@ -20,16 +20,7 @@ export function createCompanyController() {
         limit: limit ? Number(limit) : undefined,
       });
 
-      sendSuccess(res, result.companies, {
-        pagination: {
-          page: result.page,
-          limit: result.limit,
-          total: result.total,
-          totalPages: Math.ceil(result.total / result.limit) || 1,
-          hasNextPage: result.page * result.limit < result.total,
-          hasPreviousPage: result.page > 1,
-        },
-      });
+      sendSuccess(res, result);
     }),
 
     getBySlug: asyncHandler(async (req: Request, res: Response) => {
@@ -90,16 +81,7 @@ export function createCompanyController() {
         limit: limit ? Number(limit) : undefined,
       });
 
-      sendSuccess(res, result.companies, {
-        pagination: {
-          page: result.page,
-          limit: result.limit,
-          total: result.total,
-          totalPages: Math.ceil(result.total / result.limit) || 1,
-          hasNextPage: result.page * result.limit < result.total,
-          hasPreviousPage: result.page > 1,
-        },
-      });
+      sendSuccess(res, result);
     }),
 
     review: asyncHandler(async (req: Request, res: Response) => {

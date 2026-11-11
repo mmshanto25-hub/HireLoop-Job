@@ -20,6 +20,7 @@ import { revokeSession } from "../services/session.service.js";
 import { signOauthState, verifyOauthState } from "../utils/oauthState.js";
 import {
   ACCESS_COOKIE,
+  CSRF_COOKIE,
   OAUTH_STATE_COOKIE,
   REFRESH_COOKIE,
   clearOauthStateCookie,
@@ -150,6 +151,15 @@ export function createAuthController(deps: AuthControllerDeps) {
 
   const me = asyncHandler(async (req: Request, res: Response) => {
     if (!req.auth) throw AppError.unauthenticated();
+
+    // Ensure CSRF token cookie & header are always in sync for active sessions
+    let csrfToken = req.cookies?.[CSRF_COOKIE];
+    if (typeof csrfToken !== "string" || !csrfToken) {
+      csrfToken = generateToken(24);
+      setCsrfCookie(res, env, csrfToken);
+    }
+    res.setHeader("X-CSRF-Token", csrfToken);
+
     sendSuccess(res, { user: req.auth.user });
   });
 

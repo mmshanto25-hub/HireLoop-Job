@@ -15,7 +15,7 @@ const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
  *    header must match the hl_csrf cookie. A cross-site page cannot read that
  *    cookie, so it cannot forge the header.
  */
-export function csrfProtection(env: Pick<Env, "WEB_URL" | "API_URL">) {
+export function csrfProtection(env: Pick<Env, "WEB_URL" | "API_URL" | "NODE_ENV">) {
   const allowedOrigins = new Set([env.WEB_URL, env.API_URL]);
 
   return (req: Request, _res: Response, next: NextFunction): void => {
@@ -24,11 +24,28 @@ export function csrfProtection(env: Pick<Env, "WEB_URL" | "API_URL">) {
       return;
     }
 
-    const origin = req.get("origin");
+    let origin = req.get("origin");
+    if (!origin) {
+      const referer = req.get("referer");
+      if (referer) {
+        try {
+          origin = new URL(referer).origin;
+        } catch {
+          // ignore malformed referer
+        }
+      }
+    }
+
+    const isDev = env.NODE_ENV !== "production";
+    const isLocalhost = Boolean(
+      isDev && origin && (origin.includes("localhost") || origin.includes("127.0.0.1")),
+    );
+
     const isTrustedOrigin =
-      origin !== undefined &&
-      (allowedOrigins.has(origin) ||
-        (env.WEB_URL.includes("vercel.app") && origin.endsWith(".vercel.app")));
+      isLocalhost ||
+      (origin !== undefined &&
+        (allowedOrigins.has(origin) ||
+          (env.WEB_URL.includes("vercel.app") && origin.endsWith(".vercel.app"))));
 
     if (origin !== undefined && !isTrustedOrigin) {
       next(AppError.forbidden("This request came from an untrusted origin."));
@@ -56,11 +73,12 @@ export function csrfProtection(env: Pick<Env, "WEB_URL" | "API_URL">) {
     const cookieToken = req.cookies?.[CSRF_COOKIE];
     const headerToken = req.get("x-csrf-token");
 
-    // For trusted cross-site origins (e.g. Vercel frontend calling Render backend),
-    // allow if origin is verified and either CSRF cookie/header is omitted due to cross-site restrictions
+    // For trusted origins (same-origin / local dev / verified cross-site):
+    // In development on trusted local origins, allow seamlessly.
+    // In production, allow if origin is verified and either CSRF cookie/header is omitted due to cross-site restrictions
     // or the header matches the cookie token.
     if (isTrustedOrigin) {
-      if (!cookieToken || !headerToken || safeEqual(cookieToken, headerToken)) {
+      if (isDev || !cookieToken || !headerToken || safeEqual(cookieToken, headerToken)) {
         next();
         return;
       }

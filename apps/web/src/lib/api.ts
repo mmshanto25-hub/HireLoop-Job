@@ -110,10 +110,29 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   try {
     return (await rawRequest(path, options)) as T;
   } catch (err) {
+    const isNoRefresh = NO_REFRESH_PREFIXES.some((prefix) => path.startsWith(prefix));
+
+    // Auto-heal 403 CSRF token desync
+    const isCsrfError =
+      err instanceof ApiClientError &&
+      err.status === 403 &&
+      err.message.toLowerCase().includes("security token") &&
+      !isNoRefresh;
+
+    if (isCsrfError) {
+      if (typeof sessionStorage !== "undefined") {
+        sessionStorage.removeItem("hl_csrf");
+      }
+      const refreshed = await refreshSession();
+      if (refreshed) {
+        return (await rawRequest(path, options)) as T;
+      }
+    }
+
     const retryable =
       err instanceof ApiClientError &&
       err.status === 401 &&
-      !NO_REFRESH_PREFIXES.some((prefix) => path.startsWith(prefix));
+      !isNoRefresh;
     if (!retryable) throw err;
     const refreshed = await refreshSession();
     if (!refreshed) throw err;

@@ -84,7 +84,7 @@ const siteContentSchema = new Schema(
       navLinks: { type: [navLinkSchema], default: [] },
       primaryCta: {
         label: { type: String, default: "Get Started" },
-        path: { type: String, default: "/auth/signup" },
+        path: { type: String, default: "/signup" },
         visible: { type: Boolean, default: true },
       },
     },
@@ -97,7 +97,7 @@ const siteContentSchema = new Schema(
         primaryCtaText: { type: String, default: "Browse jobs" },
         primaryCtaUrl: { type: String, default: "/jobs" },
         secondaryCtaText: { type: String, default: "Post a job" },
-        secondaryCtaUrl: { type: String, default: "/auth/signup?role=recruiter" },
+        secondaryCtaUrl: { type: String, default: "/signup?role=recruiter" },
         showLiveCounter: { type: Boolean, default: true },
         customStats: { type: [heroStatSchema], default: [] },
       },
@@ -126,7 +126,7 @@ const siteContentSchema = new Schema(
         title: { type: String, default: "Ready to accelerate your hiring?" },
         description: { type: String, default: "Create your recruiter account in seconds, verify your company, and start publishing active listings today." },
         buttonText: { type: String, default: "Create an employer account" },
-        buttonUrl: { type: String, default: "/auth/signup?role=recruiter" },
+        buttonUrl: { type: String, default: "/signup?role=recruiter" },
       },
       faq: {
         visible: { type: Boolean, default: true },

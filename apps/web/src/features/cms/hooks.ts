@@ -14,8 +14,8 @@ export function useSiteContent() {
   const query = useQuery({
     queryKey: cmsKeys.public,
     queryFn: cmsApi.getPublicContent,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    initialData: DEFAULT_SITE_CONTENT,
+    staleTime: 30 * 1000, // 30 seconds
+    placeholderData: DEFAULT_SITE_CONTENT,
   });
 
   return {

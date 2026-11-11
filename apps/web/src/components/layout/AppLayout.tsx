@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Link, Outlet } from "react-router-dom";
 import { Twitter, Linkedin, Github, Facebook, Instagram } from "lucide-react";
 import { SiteHeader } from "./SiteHeader";
@@ -7,6 +8,19 @@ import { useSiteContent } from "@/features/cms/hooks";
 /** Shared shell for public pages with dynamic site configuration. */
 export function AppLayout() {
   const { content } = useSiteContent();
+
+  // Dynamically update document title and SEO description from CMS
+  useEffect(() => {
+    if (content.seo?.metaTitle) {
+      document.title = content.seo.metaTitle;
+    }
+    if (content.seo?.metaDescription) {
+      const meta = document.querySelector('meta[name="description"]');
+      if (meta) {
+        meta.setAttribute("content", content.seo.metaDescription);
+      }
+    }
+  }, [content.seo?.metaTitle, content.seo?.metaDescription]);
 
   const currentYear = new Date().getFullYear().toString();
   const copyright = (content.footer.copyrightText || "© {year} HireLoop Technologies Inc. All rights reserved.")

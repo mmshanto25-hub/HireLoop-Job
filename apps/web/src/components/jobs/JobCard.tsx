@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   Bookmark,
   Briefcase,
@@ -14,6 +15,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { useSavedJobIds, useToggleSaveJob } from "@/features/saved-jobs/hooks";
 import { useCurrentUser } from "@/features/auth/hooks";
 import { cn } from "@/lib/cn";
+import { transitions } from "@/lib/motion";
 
 export interface JobCardProps {
   job: JobListItem;
@@ -88,7 +90,10 @@ export function JobCard({ job }: JobCardProps) {
   };
 
   return (
-    <article className="group relative flex flex-col justify-between rounded-xl border border-border bg-surface p-5 shadow-card transition-all hover:border-brand/40 hover:shadow-raised">
+    <motion.article
+      whileHover={{ y: -4, transition: transitions.springSmooth }}
+      className="group relative flex flex-col justify-between rounded-xl border border-border bg-surface p-5 shadow-card transition-colors hover:border-brand/40 hover:shadow-raised"
+    >
       <div>
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3.5">
@@ -96,7 +101,7 @@ export function JobCard({ job }: JobCardProps) {
               src={job.companyLogoUrl}
               name={job.companyName}
               size="md"
-              className="rounded-lg border border-border bg-surface-muted"
+              className="rounded-lg border border-border bg-surface-muted transition-transform group-hover:scale-105"
             />
             <div>
               <Link
@@ -126,12 +131,14 @@ export function JobCard({ job }: JobCardProps) {
 
             {/* Bookmark action */}
             {(!user || isSeeker) && (
-              <button
+              <motion.button
+                whileHover={{ scale: 1.15 }}
+                whileTap={{ scale: 0.85 }}
                 type="button"
                 onClick={handleSaveToggle}
                 disabled={toggleSave.isPending}
                 className={cn(
-                  "rounded-md p-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-brand",
+                  "rounded-md p-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-brand cursor-pointer",
                   isSaved
                     ? "bg-brand-soft text-brand"
                     : "text-muted-foreground hover:bg-surface-muted hover:text-foreground",
@@ -140,7 +147,7 @@ export function JobCard({ job }: JobCardProps) {
                 title={isSaved ? "Saved" : "Save job"}
               >
                 <Bookmark className={cn("h-4 w-4", isSaved && "fill-current")} />
-              </button>
+              </motion.button>
             )}
           </div>
         </div>
@@ -170,7 +177,7 @@ export function JobCard({ job }: JobCardProps) {
       </div>
 
       <div className="mt-5 flex items-center justify-between border-t border-border/60 pt-3.5">
-        <span className="inline-flex items-center gap-1 text-xs text-subtle-foreground">
+        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
           <Calendar className="h-3 w-3" aria-hidden="true" />
           {formatRelativeDate(job.publishedAt || job.createdAt)}
         </span>
@@ -187,6 +194,6 @@ export function JobCard({ job }: JobCardProps) {
           </Link>
         </div>
       </div>
-    </article>
+    </motion.article>
   );
 }

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+import { Link, NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
   Briefcase,
@@ -312,9 +313,16 @@ export function DashboardLayout() {
           </div>
         </header>
 
-        {/* Content Body */}
+        {/* Content Body with smooth page transitions */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          <Outlet />
+          <motion.div
+            key={useLocation().pathname}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.22, ease: "easeOut" }}
+          >
+            <Outlet />
+          </motion.div>
         </main>
       </div>
     </div>

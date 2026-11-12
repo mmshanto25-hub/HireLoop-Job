@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import {
   Globe,
   Layout,
@@ -337,6 +338,7 @@ export function AdminSiteContentPage() {
       )}
 
       {/* Tab Bar */}
+      {/* Navigation Tabs with Smooth Animated Pill */}
       <div className="flex flex-wrap items-center gap-2 border-b border-border pb-3">
         {[
           { id: "general", label: "Branding & General", icon: Sliders },
@@ -349,19 +351,27 @@ export function AdminSiteContentPage() {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           return (
-            <button
+            <motion.button
+              whileTap={{ scale: 0.96 }}
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id as TabId)}
-              className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${
+              className={`relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer ${
                 isActive
-                  ? "bg-brand text-white shadow-sm"
+                  ? "text-white font-semibold"
                   : "bg-surface text-muted-foreground hover:bg-surface-muted hover:text-foreground border border-border"
               }`}
             >
-              <Icon className="h-4 w-4" />
-              <span>{tab.label}</span>
-            </button>
+              {isActive && (
+                <motion.div
+                  layoutId="activeCmsTab"
+                  className="absolute inset-0 rounded-xl bg-brand shadow-sm"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+              <Icon className="relative z-10 h-4 w-4" />
+              <span className="relative z-10">{tab.label}</span>
+            </motion.button>
           );
         })}
       </div>

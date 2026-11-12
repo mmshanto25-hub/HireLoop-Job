@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
   Briefcase,
@@ -23,6 +24,7 @@ import { JobCard } from "@/components/jobs/JobCard";
 import { useFeaturedJobs, usePublicStats } from "@/features/jobs/hooks";
 import { useCurrentUser } from "@/features/auth/hooks";
 import { useSiteContent } from "@/features/cms/hooks";
+import { transitions, fadeInUp, scaleIn, createStaggerContainer } from "@/lib/motion";
 
 export function HomePage() {
   const [keyword, setKeyword] = useState("");
@@ -55,26 +57,50 @@ export function HomePage() {
     <div className="flex flex-col">
       {/* Dynamic Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-b from-surface via-surface-muted/50 to-background border-b border-border/60 py-16 sm:py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="text-center max-w-3xl mx-auto">
+        {/* Subtle decorative glow orb */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 h-[350px] w-[600px] rounded-full bg-brand/10 blur-[100px]"
+        />
+
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
+          <motion.div
+            variants={createStaggerContainer(0.1, 0.05)}
+            initial="hidden"
+            animate="visible"
+            className="text-center max-w-3xl mx-auto"
+          >
             {hp.hero.badgeText && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-3.5 py-1 text-xs font-semibold text-brand-text">
-                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-                {hp.hero.badgeText}
-              </span>
+              <motion.div variants={fadeInUp}>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-brand/20 bg-brand-soft px-3.5 py-1 text-xs font-semibold text-brand-text shadow-xs">
+                  <Sparkles className="h-3.5 w-3.5 animate-pulse" aria-hidden="true" />
+                  {hp.hero.badgeText}
+                </span>
+              </motion.div>
             )}
-            <h1 className="mt-4 font-heading text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl text-balance">
+
+            <motion.h1
+              variants={fadeInUp}
+              className="mt-4 font-heading text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl text-balance"
+            >
               {hp.hero.headline} <span className="text-brand">{hp.hero.highlightedWord}</span>
-            </h1>
-            <p className="mt-5 text-lg text-muted-foreground leading-relaxed">
+            </motion.h1>
+
+            <motion.p
+              variants={fadeInUp}
+              className="mt-5 text-lg text-muted-foreground leading-relaxed text-balance"
+            >
               {hp.hero.subheadline}
-            </p>
-          </div>
+            </motion.p>
+          </motion.div>
 
           {/* Search Form */}
-          <form
+          <motion.form
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...transitions.springSmooth, delay: 0.25 }}
             onSubmit={handleSearch}
-            className="mt-10 mx-auto max-w-3xl rounded-2xl border border-border bg-surface p-2.5 shadow-raised sm:flex sm:items-center sm:gap-2"
+            className="mt-10 mx-auto max-w-3xl rounded-2xl border border-border bg-surface p-2.5 shadow-raised sm:flex sm:items-center sm:gap-2 transition-shadow focus-within:shadow-xl focus-within:border-brand/40"
           >
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" aria-hidden="true" />
@@ -97,28 +123,35 @@ export function HomePage() {
                 className="pl-11 h-12 border-0 bg-transparent shadow-none focus-visible:ring-0 text-foreground"
               />
             </div>
-            <Button type="submit" size="lg" className="w-full sm:w-auto mt-2 sm:mt-0 px-6 h-12 font-semibold">
-              Find Jobs
-            </Button>
-          </form>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full sm:w-auto">
+              <Button type="submit" size="lg" className="w-full sm:w-auto mt-2 sm:mt-0 px-6 h-12 font-semibold">
+                Find Jobs
+              </Button>
+            </motion.div>
+          </motion.form>
 
           {/* Action CTAs */}
-          <div className="mt-6 flex items-center justify-center gap-4 text-sm">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.35, duration: 0.4 }}
+            className="mt-6 flex items-center justify-center gap-4 text-sm"
+          >
             <Link
               to={hp.hero.primaryCtaUrl || "/jobs"}
-              className="text-muted-foreground hover:text-foreground font-medium underline underline-offset-4"
+              className="text-muted-foreground hover:text-foreground font-medium underline underline-offset-4 transition-colors"
             >
               {hp.hero.primaryCtaText || "Browse all open positions"}
             </Link>
             <span className="text-border">•</span>
             <Link
               to={isRecruiter ? "/dashboard/recruiter/jobs/new" : (hp.hero.secondaryCtaUrl || "/signup")}
-              className="text-brand font-semibold hover:text-brand-hover inline-flex items-center gap-1"
+              className="text-brand font-semibold hover:text-brand-hover inline-flex items-center gap-1 group"
             >
               {hp.hero.secondaryCtaText || "Post a job opening"}
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
             </Link>
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -128,7 +161,10 @@ export function HomePage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <h2 id="live-stats-heading" className="sr-only">Platform Statistics</h2>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-              <div className="flex items-center gap-4 rounded-xl border border-border/80 bg-surface-muted/50 p-6">
+              <motion.div
+                whileHover={{ y: -3, transition: transitions.springSmooth }}
+                className="flex items-center gap-4 rounded-xl border border-border/80 bg-surface-muted/40 p-6 transition-colors hover:border-brand/40"
+              >
                 <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-soft text-brand-text">
                   <Briefcase className="h-6 w-6" aria-hidden="true" />
                 </span>
@@ -142,9 +178,12 @@ export function HomePage() {
                     </p>
                   )}
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="flex items-center gap-4 rounded-xl border border-border/80 bg-surface-muted/50 p-6">
+              <motion.div
+                whileHover={{ y: -3, transition: transitions.springSmooth }}
+                className="flex items-center gap-4 rounded-xl border border-border/80 bg-surface-muted/40 p-6 transition-colors hover:border-accent/40"
+              >
                 <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent-soft text-accent">
                   <Building2 className="h-6 w-6" aria-hidden="true" />
                 </span>
@@ -158,9 +197,12 @@ export function HomePage() {
                     </p>
                   )}
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="flex items-center gap-4 rounded-xl border border-border/80 bg-surface-muted/50 p-6">
+              <motion.div
+                whileHover={{ y: -3, transition: transitions.springSmooth }}
+                className="flex items-center gap-4 rounded-xl border border-border/80 bg-surface-muted/40 p-6 transition-colors hover:border-info/40"
+              >
                 <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-info-soft text-info">
                   <Users2 className="h-6 w-6" aria-hidden="true" />
                 </span>
@@ -174,7 +216,7 @@ export function HomePage() {
                     </p>
                   )}
                 </div>
-              </div>
+              </motion.div>
             </div>
           </div>
         </section>
@@ -192,22 +234,25 @@ export function HomePage() {
                 {hp.featuredCategoriesSection.subheading}
               </p>
             </div>
-            <Link to="/jobs" className="text-sm font-semibold text-brand hover:text-brand-hover inline-flex items-center gap-1">
+            <Link to="/jobs" className="text-sm font-semibold text-brand hover:text-brand-hover inline-flex items-center gap-1 group">
               Browse all categories
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
             </Link>
           </div>
 
           <div className="flex flex-wrap gap-2.5">
             {JOB_CATEGORIES.slice(0, 12).map((category) => (
-              <button
+              <motion.button
                 key={category}
+                whileHover={{ y: -2, scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                transition={transitions.springSmooth}
                 type="button"
                 onClick={() => handleCategoryClick(category)}
-                className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground shadow-sm transition-all hover:border-brand hover:bg-brand-soft hover:text-brand-text active:scale-95"
+                className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground shadow-xs transition-colors hover:border-brand hover:bg-brand-soft hover:text-brand-text cursor-pointer"
               >
                 <span>{category}</span>
-              </button>
+              </motion.button>
             ))}
           </div>
         </section>
@@ -223,9 +268,9 @@ export function HomePage() {
                 Featured job openings
               </h2>
             </div>
-            <Link to="/jobs" className="text-sm font-semibold text-brand hover:text-brand-hover inline-flex items-center gap-1">
+            <Link to="/jobs" className="text-sm font-semibold text-brand hover:text-brand-hover inline-flex items-center gap-1 group">
               View all jobs
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
             </Link>
           </div>
 
@@ -246,11 +291,17 @@ export function HomePage() {
               ))}
             </div>
           ) : featuredJobs && featuredJobs.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <motion.div
+              variants={createStaggerContainer(0.06, 0.02)}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-50px" }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            >
               {featuredJobs.map((job) => (
                 <JobCard key={job.id} job={job} />
               ))}
-            </div>
+            </motion.div>
           ) : (
             <div className="rounded-xl border border-border bg-surface p-12 text-center max-w-md mx-auto">
               <Briefcase className="h-10 w-10 text-muted-foreground mx-auto mb-3" aria-hidden="true" />
@@ -282,7 +333,10 @@ export function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="rounded-xl border border-border bg-surface p-6 shadow-card">
+            <motion.div
+              whileHover={{ y: -4, transition: transitions.springSmooth }}
+              className="rounded-xl border border-border bg-surface p-6 shadow-card hover:border-brand/40 transition-colors"
+            >
               <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-soft text-brand-text mb-5">
                 <Compass className="h-6 w-6" aria-hidden="true" />
               </span>
@@ -290,9 +344,12 @@ export function HomePage() {
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
                 Filter with pinpoint accuracy by location, remote policy, technology stack, and salary requirements.
               </p>
-            </div>
+            </motion.div>
 
-            <div className="rounded-xl border border-border bg-surface p-6 shadow-card">
+            <motion.div
+              whileHover={{ y: -4, transition: transitions.springSmooth }}
+              className="rounded-xl border border-border bg-surface p-6 shadow-card hover:border-accent/40 transition-colors"
+            >
               <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent-soft text-accent mb-5">
                 <LineChart className="h-6 w-6" aria-hidden="true" />
               </span>
@@ -300,9 +357,12 @@ export function HomePage() {
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
                 Transparent compensation bands on listings empower fair negotiations and confident career choices.
               </p>
-            </div>
+            </motion.div>
 
-            <div className="rounded-xl border border-border bg-surface p-6 shadow-card">
+            <motion.div
+              whileHover={{ y: -4, transition: transitions.springSmooth }}
+              className="rounded-xl border border-border bg-surface p-6 shadow-card hover:border-info/40 transition-colors"
+            >
               <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-info-soft text-info mb-5">
                 <Building2 className="h-6 w-6" aria-hidden="true" />
               </span>
@@ -310,9 +370,12 @@ export function HomePage() {
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
                 Every employer profile undergoes administrative verification before listings can be published.
               </p>
-            </div>
+            </motion.div>
 
-            <div className="rounded-xl border border-border bg-surface p-6 shadow-card">
+            <motion.div
+              whileHover={{ y: -4, transition: transitions.springSmooth }}
+              className="rounded-xl border border-border bg-surface p-6 shadow-card hover:border-success/40 transition-colors"
+            >
               <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-success-soft text-success mb-5">
                 <FileCheck2 className="h-6 w-6" aria-hidden="true" />
               </span>
@@ -320,7 +383,7 @@ export function HomePage() {
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
                 Private resume storage with restricted authorized access ensures complete data confidentiality.
               </p>
-            </div>
+            </motion.div>
           </div>
         </section>
       )}
@@ -340,7 +403,10 @@ export function HomePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
               {/* For Seekers */}
-              <div className="rounded-2xl border border-border bg-surface p-8 shadow-card">
+              <motion.div
+                whileHover={{ y: -3, transition: transitions.springSmooth }}
+                className="rounded-2xl border border-border bg-surface p-8 shadow-card"
+              >
                 <span className="text-xs font-semibold uppercase tracking-wider text-brand">For Job Seekers</span>
                 <h3 className="mt-2 font-heading text-xl font-bold text-foreground">Land your dream role</h3>
                 <ul className="mt-6 space-y-4 text-sm text-muted-foreground">
@@ -362,10 +428,13 @@ export function HomePage() {
                     <Button className="w-full">Create Free Seeker Account</Button>
                   </Link>
                 </div>
-              </div>
+              </motion.div>
 
               {/* For Recruiters */}
-              <div className="rounded-2xl border border-border bg-surface p-8 shadow-card">
+              <motion.div
+                whileHover={{ y: -3, transition: transitions.springSmooth }}
+                className="rounded-2xl border border-border bg-surface p-8 shadow-card"
+              >
                 <span className="text-xs font-semibold uppercase tracking-wider text-accent">For Recruiters</span>
                 <h3 className="mt-2 font-heading text-xl font-bold text-foreground">Hire qualified talent</h3>
                 <ul className="mt-6 space-y-4 text-sm text-muted-foreground">
@@ -387,13 +456,13 @@ export function HomePage() {
                     <Button variant="outline" className="w-full">Register as Recruiter</Button>
                   </Link>
                 </div>
-              </div>
+              </motion.div>
             </div>
           </div>
         </section>
       )}
 
-      {/* Dynamic FAQ Section */}
+      {/* Dynamic FAQ Section with Smooth AnimatePresence Accordion */}
       {hp.faq.visible && hp.faq.items && hp.faq.items.length > 0 && (
         <section className="py-20 border-t border-border bg-surface">
           <div className="mx-auto max-w-4xl px-4 sm:px-6">
@@ -425,19 +494,36 @@ export function HomePage() {
                       <button
                         type="button"
                         onClick={() => setOpenFaqId(isOpen ? null : item.id)}
-                        className="w-full py-4 px-5 text-left font-semibold text-foreground flex items-center justify-between gap-4 hover:bg-surface-muted/80 transition-colors"
+                        className="w-full py-4 px-5 text-left font-semibold text-foreground flex items-center justify-between gap-4 hover:bg-surface-muted/80 transition-colors cursor-pointer"
                         aria-expanded={isOpen}
                       >
                         <span className="text-sm sm:text-base">{item.question}</span>
-                        <ChevronDown
-                          className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-180 text-brand" : ""}`}
-                        />
+                        <motion.span
+                          animate={{ rotate: isOpen ? 180 : 0 }}
+                          transition={transitions.springSmooth}
+                          className="shrink-0"
+                        >
+                          <ChevronDown
+                            className={`h-4 w-4 ${isOpen ? "text-brand" : "text-muted-foreground"}`}
+                          />
+                        </motion.span>
                       </button>
-                      {isOpen && (
-                        <div className="px-5 pb-5 text-sm text-muted-foreground leading-relaxed border-t border-border/50 pt-3">
-                          {item.answer}
-                        </div>
-                      )}
+                      <AnimatePresence initial={false}>
+                        {isOpen && (
+                          <motion.div
+                            key="faq-content"
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={transitions.springSmooth}
+                            className="overflow-hidden"
+                          >
+                            <div className="px-5 pb-5 text-sm text-muted-foreground leading-relaxed border-t border-border/50 pt-3">
+                              {item.answer}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   );
                 })}
@@ -448,8 +534,8 @@ export function HomePage() {
 
       {/* Final CTA Banner */}
       {hp.ctaBanner.visible && (
-        <section className="bg-brand text-brand-foreground py-16">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 text-center">
+        <section className="relative overflow-hidden bg-brand text-brand-foreground py-16">
+          <div className="relative mx-auto max-w-7xl px-4 sm:px-6 text-center">
             <h2 className="font-heading text-3xl font-bold sm:text-4xl text-balance">
               {hp.ctaBanner.title}
             </h2>
@@ -457,16 +543,20 @@ export function HomePage() {
               {hp.ctaBanner.description}
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Link to={hp.ctaBanner.buttonUrl || "/signup"}>
-                <Button size="lg" className="bg-surface text-foreground hover:bg-surface-muted font-bold">
-                  {hp.ctaBanner.buttonText || "Get Started Free"}
-                </Button>
-              </Link>
-              <Link to="/jobs">
-                <Button size="lg" variant="outline" className="border-brand-foreground/30 text-brand-foreground hover:bg-brand-hover">
-                  Explore Jobs
-                </Button>
-              </Link>
+              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+                <Link to={hp.ctaBanner.buttonUrl || "/signup"}>
+                  <Button size="lg" className="bg-surface text-foreground hover:bg-surface-muted font-bold shadow-md">
+                    {hp.ctaBanner.buttonText || "Get Started Free"}
+                  </Button>
+                </Link>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+                <Link to="/jobs">
+                  <Button size="lg" variant="outline" className="border-brand-foreground/30 text-brand-foreground hover:bg-brand-hover">
+                    Explore Jobs
+                  </Button>
+                </Link>
+              </motion.div>
             </div>
           </div>
         </section>

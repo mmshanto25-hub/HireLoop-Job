@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { X, ArrowRight, Info, AlertTriangle, CheckCircle, Flame } from "lucide-react";
 import type { AnnouncementSettings } from "@hireloop/shared";
+import { transitions } from "@/lib/motion";
 
 interface AnnouncementBannerProps {
   settings: AnnouncementSettings;
@@ -11,7 +13,6 @@ export function AnnouncementBanner({ settings }: AnnouncementBannerProps) {
   const [isDismissed, setIsDismissed] = useState(false);
 
   useEffect(() => {
-    // Check if user previously dismissed this exact message
     if (typeof sessionStorage !== "undefined") {
       const dismissedMessage = sessionStorage.getItem("hl_announcement_dismissed");
       if (dismissedMessage === settings.message) {
@@ -22,9 +23,7 @@ export function AnnouncementBanner({ settings }: AnnouncementBannerProps) {
     }
   }, [settings.message]);
 
-  if (!settings.enabled || isDismissed || !settings.message) {
-    return null;
-  }
+  const show = Boolean(settings.enabled && !isDismissed && settings.message);
 
   const handleDismiss = () => {
     setIsDismissed(true);
@@ -48,37 +47,48 @@ export function AnnouncementBanner({ settings }: AnnouncementBannerProps) {
   }[settings.variant] || Info;
 
   return (
-    <div
-      role="region"
-      aria-label="Announcement"
-      className={`relative z-40 border-b px-4 py-2 text-xs sm:text-sm font-medium transition-all ${variantStyles[settings.variant]}`}
-    >
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
-        <div className="flex flex-1 items-center justify-center gap-2 text-center">
-          <VariantIcon className="h-4 w-4 shrink-0 hidden sm:inline-block" aria-hidden="true" />
-          <span>{settings.message}</span>
-          {settings.linkUrl && (
-            <Link
-              to={settings.linkUrl}
-              className="inline-flex items-center gap-1 font-semibold underline underline-offset-4 hover:opacity-80 transition-opacity"
-            >
-              {settings.linkLabel || "Learn more"}
-              <ArrowRight className="h-3 w-3" />
-            </Link>
-          )}
-        </div>
+    <AnimatePresence initial={false}>
+      {show && (
+        <motion.div
+          key="announcement-banner"
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: "auto", opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={transitions.springSmooth}
+          role="region"
+          aria-label="Announcement"
+          className={`relative z-40 overflow-hidden border-b px-4 py-2 text-xs sm:text-sm font-medium transition-colors ${variantStyles[settings.variant]}`}
+        >
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
+            <div className="flex flex-1 items-center justify-center gap-2 text-center">
+              <VariantIcon className="h-4 w-4 shrink-0 hidden sm:inline-block" aria-hidden="true" />
+              <span>{settings.message}</span>
+              {settings.linkUrl && (
+                <Link
+                  to={settings.linkUrl}
+                  className="inline-flex items-center gap-1 font-semibold underline underline-offset-4 hover:opacity-80 transition-opacity"
+                >
+                  {settings.linkLabel || "Learn more"}
+                  <ArrowRight className="h-3 w-3" />
+                </Link>
+              )}
+            </div>
 
-        {settings.dismissible && (
-          <button
-            type="button"
-            onClick={handleDismiss}
-            aria-label="Dismiss banner"
-            className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10 transition-colors shrink-0"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
-        )}
-      </div>
-    </div>
+            {settings.dismissible && (
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                type="button"
+                onClick={handleDismiss}
+                aria-label="Dismiss banner"
+                className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10 transition-colors shrink-0 cursor-pointer"
+              >
+                <X className="h-3.5 w-3.5" />
+              </motion.button>
+            )}
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
